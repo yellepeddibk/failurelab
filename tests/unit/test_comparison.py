@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from failurelab.comparison.service import compare_traces
+from failurelab.comparison.service import _metric_deltas, compare_traces
 from failurelab.config.settings import FailureLabConfig
 from failurelab.models.trace import TraceRecord
 
@@ -43,3 +43,19 @@ def test_compare_gate_threshold_failure() -> None:
     assert result.gate_status == "failed"
     assert result.gate_passed is False
     assert result.violations[0].metric == "failure_rate"
+
+
+def test_unavailable_metric_directions_follow_contract() -> None:
+    baseline = {
+        "citation_presence_rate": {"value": None},
+        "latency_p95_ms": {"value": None},
+    }
+    candidate = {
+        "citation_presence_rate": {"value": None},
+        "latency_p95_ms": {"value": None},
+    }
+    deltas = _metric_deltas(baseline, candidate)
+    assert deltas["citation_presence_rate"]["direction"] == "higher_is_better"
+    assert deltas["citation_presence_rate"]["interpretation"] == "unavailable"
+    assert deltas["latency_p95_ms"]["direction"] == "lower_is_better"
+    assert deltas["latency_p95_ms"]["interpretation"] == "unavailable"

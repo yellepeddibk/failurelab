@@ -55,6 +55,9 @@ def test_compare_fail_on_regression(tmp_path) -> None:
         ],
     )
     assert result.exit_code == 10
+    report = (tmp_path / "out" / "comparison.md").read_text(encoding="utf-8")
+    assert "Gate evaluated: yes" in report
+    assert "Gate result: failed" in report
 
 
 def test_compare_report_includes_scope_and_deltas(tmp_path) -> None:
@@ -72,5 +75,17 @@ def test_compare_report_includes_scope_and_deltas(tmp_path) -> None:
     assert result.exit_code == 0
     report = (tmp_path / "out" / "comparison.md").read_text(encoding="utf-8")
     assert "Gate status: not_configured" in report
+    assert "Gate evaluated: no" in report
+    assert "Gate result: not applicable" in report
     assert "## Full-dataset deltas" in report
-    assert "| failure_rate |" in report
+    assert (
+        "| failure_rate | 0.5 | 0.666666666667 | 0.166666666667 | lower_is_better | regression |"
+        in report
+    )
+    assert (
+        "| citation_presence_rate | unavailable | unavailable | unavailable | higher_is_better | unavailable |"
+        in report
+    )
+    assert "| cost_total_usd | 0.04 | 0.1 | 0.06 | lower_is_better | regression |" in report
+    assert "| cost_average_usd | 0.02 | 0.025 | 0.005 | lower_is_better | regression |" in report
+    assert "None" not in report

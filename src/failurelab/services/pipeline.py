@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from math import isfinite
 from pathlib import Path
 from typing import cast
 
@@ -87,18 +88,21 @@ def analyze(
     write_yaml_atomic(
         regression_path, [case.model_dump(exclude_none=True) for case in regression.tests]
     )
+    generated_files = [
+        "metrics.json",
+        "findings.json",
+        "report.md",
+        "regression_tests.yaml",
+        "run_manifest.json",
+    ]
+    if ingestion.issues:
+        generated_files.append("invalid_traces.jsonl")
     manifest = render_run_manifest(
         input_path=path,
         resolved_config=config.model_dump(),
         valid_count=len(ingestion.traces),
         invalid_count=len(ingestion.issues),
-        generated_files=[
-            "metrics.json",
-            "findings.json",
-            "report.md",
-            "regression_tests.yaml",
-            "run_manifest.json",
-        ],
+        generated_files=generated_files,
     )
     write_json_atomic(manifest_path, manifest)
 
@@ -158,13 +162,18 @@ def compare(
                 "# FailureLab Comparison Report",
                 "",
                 f"Gate status: {result.gate_status}",
-                f"Gate passed: {result.gate_passed}",
+                f"Gate evaluated: {'no' if result.gate_status == 'not_configured' else 'yes'}",
+                (
+                    "Gate result: not applicable"
+                    if result.gate_status == "not_configured"
+                    else f"Gate result: {result.gate_status}"
+                ),
                 f"Gate scope: {result.gate_scope}",
                 "",
                 "Configured thresholds:",
                 (
-                    f"- failure_rate delta <= {configured_thresholds['max_failure_rate_increase']}, "
-                    f"latency_p95_ms delta <= {configured_thresholds['max_latency_p95_increase_ms']}"
+                    f"- failure_rate delta <= {_format_markdown_value(configured_thresholds['max_failure_rate_increase'])}, "
+                    f"latency_p95_ms delta <= {_format_markdown_value(configured_thresholds['max_latency_p95_increase_ms'])}"
                     if any(v is not None for v in configured_thresholds.values())
                     else "- No gate thresholds configured."
                 ),
@@ -182,7 +191,7 @@ def compare(
                 "| metric | baseline | candidate | delta | direction | interpretation |",
                 "| --- | ---: | ---: | ---: | --- | --- |",
                 *[
-                    f"| {name} | {payload.get('baseline')} | {payload.get('candidate')} | {payload.get('delta')} | {payload.get('direction')} | {payload.get('interpretation')} |"
+                    f"| {name} | {_format_markdown_value(payload.get('baseline'))} | {_format_markdown_value(payload.get('candidate'))} | {_format_markdown_value(payload.get('delta'))} | {payload.get('direction')} | {payload.get('interpretation')} |"
                     for name, payload in full_deltas.items()
                 ],
                 "",
@@ -190,12 +199,12 @@ def compare(
                 "| metric | baseline | candidate | delta | direction | interpretation |",
                 "| --- | ---: | ---: | ---: | --- | --- |",
                 *[
-                    f"| {name} | {payload.get('baseline')} | {payload.get('candidate')} | {payload.get('delta')} | {payload.get('direction')} | {payload.get('interpretation')} |"
+                    f"| {name} | {_format_markdown_value(payload.get('baseline'))} | {_format_markdown_value(payload.get('candidate'))} | {_format_markdown_value(payload.get('delta'))} | {payload.get('direction')} | {payload.get('interpretation')} |"
                     for name, payload in matched_deltas.items()
                 ],
                 "",
                 "Gate violations:",
-                *([f"- {violation.message}" for violation in result.violations] or ["- None."]),
+                *([f"- {violation.message}" for violation in result.violations] or ["- none."]),
                 "",
                 "No statistical significance claims.",
             ]
@@ -220,3 +229,17 @@ def compare(
         comparison=result,
         output_files=[comparison_json, comparison_md, gate_json],
     )
+
+
+def _format_markdown_value(value: object) -> str:
+    if value is None:
+        return "unavailable"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        if not isfinite(value):
+            return "unavailable"
+        return format(value, ".12g")
+    return str(value)

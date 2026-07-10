@@ -490,6 +490,21 @@ def _extend_retrieval_citation_metrics(
                 direction="higher_is_better",
             )
         )
+    else:
+        metrics.append(
+            MetricResult(
+                name="citation_presence_rate",
+                value=None,
+                description="traces with nonempty answer and at least one citation / traces with nonempty answer",
+                eligible_count=0,
+                excluded_count=len(traces),
+                numerator=None,
+                denominator=0,
+                unit="ratio",
+                direction="higher_is_better",
+                unavailable_reason="no traces with nonempty answer",
+            )
+        )
 
 
 def _extend_agent_metrics(

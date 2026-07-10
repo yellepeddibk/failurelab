@@ -34,6 +34,14 @@ def test_analyze_skip_invalid(tmp_path: Path) -> None:
     assert manifest["resolved_config"]["ingestion"]["mode"] == "skip_invalid"
     assert manifest["valid_trace_count"] == 1
     assert manifest["invalid_row_count"] == 1
+    assert manifest["generated_files"] == [
+        "findings.json",
+        "invalid_traces.jsonl",
+        "metrics.json",
+        "regression_tests.yaml",
+        "report.md",
+        "run_manifest.json",
+    ]
 
 
 def test_analyze_default_records_strict_mode(tmp_path: Path) -> None:
@@ -47,6 +55,13 @@ def test_analyze_default_records_strict_mode(tmp_path: Path) -> None:
     assert result.exit_code == 0
     manifest = json.loads((out / "run_manifest.json").read_text(encoding="utf-8"))
     assert manifest["resolved_config"]["ingestion"]["mode"] == "strict"
+    assert manifest["generated_files"] == [
+        "findings.json",
+        "metrics.json",
+        "regression_tests.yaml",
+        "report.md",
+        "run_manifest.json",
+    ]
 
 
 def test_cli_override_wins_over_config_file(tmp_path: Path) -> None:

@@ -9,6 +9,18 @@ from failurelab.config.settings import FailureLabConfig
 from failurelab.evals.metrics import compute_metrics, metric_dict
 from failurelab.models.trace import TraceRecord
 
+TRACKED_METRICS: tuple[tuple[str, str], ...] = (
+    ("failure_rate", "lower_is_better"),
+    ("latency_average_ms", "lower_is_better"),
+    ("latency_p95_ms", "lower_is_better"),
+    ("retrieval_recall_at_k", "higher_is_better"),
+    ("citation_presence_rate", "higher_is_better"),
+    ("tool_success_rate", "higher_is_better"),
+    ("cost_average_usd", "lower_is_better"),
+    ("cost_total_usd", "lower_is_better"),
+    ("cost_per_successful_trace_usd", "lower_is_better"),
+)
+
 
 @dataclass(slots=True)
 class GateViolation:
@@ -131,24 +143,13 @@ def _compute_metric_map(traces: list[TraceRecord], config: FailureLabConfig) -> 
 def _metric_deltas(
     baseline_metrics: dict[str, object], candidate_metrics: dict[str, object]
 ) -> dict[str, dict[str, Any]]:
-    tracked = [
-        "failure_rate",
-        "latency_average_ms",
-        "latency_p95_ms",
-        "retrieval_recall_at_k",
-        "citation_presence_rate",
-        "tool_success_rate",
-        "cost_average_usd",
-        "cost_total_usd",
-        "cost_per_successful_trace_usd",
-    ]
     deltas: dict[str, dict[str, Any]] = {}
-    for name in tracked:
+    for name, expected_direction in TRACKED_METRICS:
         base = _metric_as_dict(baseline_metrics.get(name))
         cand = _metric_as_dict(candidate_metrics.get(name))
         baseline_value = base.get("value")
         candidate_value = cand.get("value")
-        direction = str(base.get("direction") or cand.get("direction") or "higher_is_neutral")
+        direction = str(base.get("direction") or cand.get("direction") or expected_direction)
         delta: float | None = None
         interpretation = "unavailable"
         if isinstance(baseline_value, (int, float)) and isinstance(candidate_value, (int, float)):

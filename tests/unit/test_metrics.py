@@ -60,3 +60,20 @@ def test_unavailable_latency_and_cost_metrics_are_null() -> None:
     cost = next(item for item in bundle.metrics if item.name == "cost_average_usd")
     assert latency.value is None
     assert cost.value is None
+
+
+def test_unavailable_citation_metric_uses_contract_direction() -> None:
+    trace = TraceRecord.model_validate(
+        {
+            "schema_version": "0.1",
+            "trace_id": "a",
+            "timestamp": "2026-01-01T00:00:00+00:00",
+            "success": True,
+            "answer": "   ",
+        }
+    )
+    bundle = compute_metrics([trace], retrieval_k=1, excessive_steps_threshold=3)
+    citation = next(item for item in bundle.metrics if item.name == "citation_presence_rate")
+    assert citation.value is None
+    assert citation.direction == "higher_is_better"
+    assert citation.unavailable_reason == "no traces with nonempty answer"
