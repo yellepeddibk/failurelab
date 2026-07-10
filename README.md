@@ -48,9 +48,27 @@ failurelab compare examples/baseline_traces.jsonl examples/candidate_traces.json
 - `invalid_traces.jsonl` (skip-invalid mode)
 - `comparison.json`, `comparison.md`, `gate_result.json` (compare)
 
+## Configuration precedence
+
+FailureLab resolves configuration deterministically in this order:
+
+1. built-in defaults
+2. config file values (`--config`)
+3. explicit CLI overrides (for example `--skip-invalid`, `--retrieval-k`)
+
+`run_manifest.json` records the effective resolved configuration used for execution.
+
 ## Metrics notes
 
-Each metric includes value, numerator, denominator, eligibility counts, direction, and unavailable reason when needed.
+Each metric includes value, numerator, denominator, eligibility counts, direction, and unavailable reason when needed. Metrics that require observations are reported as unavailable (`null`) when no eligible observations exist; they are not coerced to `0`.
+
+## Analysis semantics
+
+- Failure slices include only elevated failure segments (positive uplift over global failure rate).
+- Root-cause hypotheses are generated only for explicitly failed traces.
+- Draft regression cases are generated only from failed traces with concrete replayable input.
+- Comparison outputs include full-dataset and matched-ID scopes, plus metric deltas.
+- Gate status is tri-state: `not_configured`, `passed`, or `failed`.
 
 ## Architecture
 

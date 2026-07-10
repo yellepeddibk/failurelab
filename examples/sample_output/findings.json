@@ -1,0 +1,31 @@
+{
+  "failure_slices": [],
+  "root_cause_hypotheses": [
+    {
+      "confidence": "high",
+      "evidence": [
+        "Expected sources absent from all retrieved sources."
+      ],
+      "hypothesis": "retrieval_failure",
+      "limitations": [
+        "Deterministic heuristic analysis only.",
+        "No causal certainty or significance claims."
+      ],
+      "rule_id": "RC001",
+      "source_trace_id": "rag-002"
+    },
+    {
+      "confidence": "low",
+      "evidence": [
+        "Expected sources are within top-k and no explicit tool failure exists."
+      ],
+      "hypothesis": "possible_reasoning_failure",
+      "limitations": [
+        "Deterministic heuristic analysis only.",
+        "No causal certainty or significance claims."
+      ],
+      "rule_id": "RC008",
+      "source_trace_id": "rag-003"
+    }
+  ]
+}

@@ -55,3 +55,22 @@ def test_compare_fail_on_regression(tmp_path) -> None:
         ],
     )
     assert result.exit_code == 10
+
+
+def test_compare_report_includes_scope_and_deltas(tmp_path) -> None:
+    result = runner.invoke(
+        app,
+        [
+            "compare",
+            "examples/baseline_traces.jsonl",
+            "examples/candidate_traces.jsonl",
+            "--output",
+            str(tmp_path / "out"),
+            "--overwrite",
+        ],
+    )
+    assert result.exit_code == 0
+    report = (tmp_path / "out" / "comparison.md").read_text(encoding="utf-8")
+    assert "Gate status: not_configured" in report
+    assert "## Full-dataset deltas" in report
+    assert "| failure_rate |" in report

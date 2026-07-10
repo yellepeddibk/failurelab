@@ -75,40 +75,54 @@ class CategoricalFailureSliceDiscoverer(FailureSliceDiscoverer):
                     traces, "latency_ms"
                 )
                 cost_delta = _group_mean(subset, "cost_usd") - _group_mean(traces, "cost_usd")
-                findings.append(
-                    FailureSlice(
-                        name=field,
-                        value=value,
-                        support=len(subset),
-                        known_outcomes=len(known),
-                        failure_count=len(failure),
-                        failure_rate=failure_rate,
-                        global_failure_rate=global_failure_rate,
-                        absolute_uplift=absolute_uplift,
-                        relative_risk=relative_risk,
-                        recall_delta=recall_delta if recall_delta == recall_delta else None,
-                        latency_delta_ms=latency_delta if latency_delta == latency_delta else None,
-                        cost_delta_usd=cost_delta if cost_delta == cost_delta else None,
-                        evidence_trace_ids=[
-                            trace.trace_id
-                            for trace in sorted(subset, key=lambda item: item.trace_id)[:5]
-                        ],
-                        caveats=[
-                            "No statistical significance claims.",
-                            "Associative pattern only.",
-                        ],
-                        recommended_next_analysis=f"Compare {field}={value} against nearest alternative with same workload.",
+                if (
+                    known
+                    and failure
+                    and global_failure_rate is not None
+                    and failure_rate is not None
+                ):
+                    if failure_rate <= global_failure_rate:
+                        continue
+                    if absolute_uplift is None or absolute_uplift <= 0:
+                        continue
+                    if relative_risk is not None and relative_risk <= 1:
+                        continue
+                    findings.append(
+                        FailureSlice(
+                            name=field,
+                            value=value,
+                            support=len(subset),
+                            known_outcomes=len(known),
+                            failure_count=len(failure),
+                            failure_rate=failure_rate,
+                            global_failure_rate=global_failure_rate,
+                            absolute_uplift=absolute_uplift,
+                            relative_risk=relative_risk,
+                            recall_delta=recall_delta if recall_delta == recall_delta else None,
+                            latency_delta_ms=latency_delta
+                            if latency_delta == latency_delta
+                            else None,
+                            cost_delta_usd=cost_delta if cost_delta == cost_delta else None,
+                            evidence_trace_ids=[
+                                trace.trace_id
+                                for trace in sorted(subset, key=lambda item: item.trace_id)[:5]
+                            ],
+                            caveats=[
+                                "No statistical significance claims.",
+                                "Associative pattern only.",
+                            ],
+                            recommended_next_analysis=f"Compare {field}={value} against nearest alternative with same workload.",
+                        )
                     )
-                )
         ordered = sorted(
             findings,
             key=lambda item: (
-                item.absolute_uplift if item.absolute_uplift is not None else -10.0,
-                item.support,
+                -(item.absolute_uplift if item.absolute_uplift is not None else 0.0),
+                -item.failure_count,
+                -item.support,
                 item.name,
                 item.value,
             ),
-            reverse=True,
         )
         return ordered[:max_findings]
 

@@ -5,12 +5,13 @@ from __future__ import annotations
 import os
 from enum import IntEnum
 from pathlib import Path
+from typing import Literal
 
 import typer
 from rich.console import Console
 
 from failurelab import __version__
-from failurelab.config.settings import load_config
+from failurelab.config.settings import FailureLabConfig, load_config
 from failurelab.services.pipeline import analyze, compare, validate
 
 app = typer.Typer(help="FailureLab deterministic reliability analysis")
@@ -24,6 +25,23 @@ class ExitCode(IntEnum):
     FILE_ERROR = 4
     EVALUATION_REPORT_ERROR = 5
     QUALITY_GATE_FAILED = 10
+
+
+def _resolve_config(
+    config_path: Path | None,
+    *,
+    ingestion_mode: Literal["strict", "skip_invalid"] | None = None,
+    retrieval_k: int | None = None,
+    fail_on_regression: bool | None = None,
+) -> FailureLabConfig:
+    cfg = load_config(config_path)
+    if ingestion_mode is not None:
+        cfg.ingestion.mode = ingestion_mode
+    if retrieval_k is not None:
+        cfg.evaluation.retrieval_k = retrieval_k
+    if fail_on_regression is not None:
+        cfg.comparison.fail_on_regression = fail_on_regression
+    return cfg
 
 
 @app.callback(invoke_without_command=True)
@@ -41,16 +59,31 @@ def main_callback(
 @app.command("validate")
 def validate_cmd(
     path: Path = typer.Argument(..., exists=False, dir_okay=True, file_okay=True),
-    strict: bool = typer.Option(True, "--strict/--skip-invalid"),
+    config: Path | None = typer.Option(None, "--config"),
+    strict: bool = typer.Option(False, "--strict", help="Stop on first invalid row."),
+    skip_invalid: bool = typer.Option(False, "--skip-invalid", help="Continue past invalid rows."),
 ) -> None:
     """Validate trace JSONL input."""
-    ingestion = validate(path, strict=strict)
+    if strict and skip_invalid:
+        raise typer.BadParameter("--strict and --skip-invalid are mutually exclusive")
+    try:
+        mode_override: Literal["strict", "skip_invalid"] | None = None
+        if strict:
+            mode_override = "strict"
+        elif skip_invalid:
+            mode_override = "skip_invalid"
+        cfg = _resolve_config(config, ingestion_mode=mode_override)
+    except Exception as error:
+        raise typer.Exit(code=ExitCode.CLI_CONFIG_ERROR) from error
+    strict_mode = cfg.ingestion.mode == "strict"
+
+    ingestion = validate(path, strict=strict_mode)
     console.print(
         f"valid={len(ingestion.traces)} invalid={len(ingestion.issues)} duplicates={ingestion.duplicate_ids} blanks={ingestion.blank_rows}"
     )
     if ingestion.issues and ingestion.issues[0].error_type == "file_error":
         raise typer.Exit(code=ExitCode.FILE_ERROR)
-    if ingestion.issues and strict:
+    if ingestion.issues and strict_mode:
         issue = ingestion.issues[0]
         console.print(
             f"error row={issue.row_number} field={issue.field_path} message={issue.message}"
@@ -79,14 +112,15 @@ def analyze_cmd(
     if strict and skip_invalid:
         raise typer.BadParameter("--strict and --skip-invalid are mutually exclusive")
     try:
-        cfg = load_config(config)
+        mode_override: Literal["strict", "skip_invalid"] | None = None
+        if strict:
+            mode_override = "strict"
+        elif skip_invalid:
+            mode_override = "skip_invalid"
+        cfg = _resolve_config(config, ingestion_mode=mode_override, retrieval_k=retrieval_k)
     except Exception as error:
         raise typer.Exit(code=ExitCode.CLI_CONFIG_ERROR) from error
-    if retrieval_k is not None:
-        cfg.evaluation.retrieval_k = retrieval_k
-    strict_mode = strict or cfg.ingestion.mode == "strict"
-    if skip_invalid:
-        strict_mode = False
+    strict_mode = cfg.ingestion.mode == "strict"
 
     try:
         result = analyze(path, output, cfg, strict=strict_mode, overwrite=overwrite)
@@ -128,11 +162,14 @@ def compare_cmd(
     overwrite: bool = typer.Option(False, "--overwrite"),
 ) -> None:
     """Compare baseline and candidate traces."""
-    cfg = load_config(config)
-    if retrieval_k is not None:
-        cfg.evaluation.retrieval_k = retrieval_k
-    if fail_on_regression:
-        cfg.comparison.fail_on_regression = True
+    try:
+        cfg = _resolve_config(
+            config,
+            retrieval_k=retrieval_k,
+            fail_on_regression=True if fail_on_regression else None,
+        )
+    except Exception as error:
+        raise typer.Exit(code=ExitCode.CLI_CONFIG_ERROR) from error
 
     result = compare(baseline_path, candidate_path, output, cfg, overwrite)
     if result.ingestion.issues:
@@ -143,10 +180,11 @@ def compare_cmd(
     if result.comparison is None:
         raise typer.Exit(code=ExitCode.EVALUATION_REPORT_ERROR)
 
+    console.print(f"gate_status={result.comparison.gate_status}")
     console.print(f"gate_passed={result.comparison.gate_passed}")
     for output_path in result.output_files:
         console.print(str(output_path))
-    if cfg.comparison.fail_on_regression and not result.comparison.gate_passed:
+    if cfg.comparison.fail_on_regression and result.comparison.gate_passed is False:
         raise typer.Exit(code=ExitCode.QUALITY_GATE_FAILED)
 
 

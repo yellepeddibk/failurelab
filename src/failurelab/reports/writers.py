@@ -121,10 +121,13 @@ def render_markdown_report(
             f"- {f.name}={f.value} support={f.support} failure_rate={f.failure_rate}"
             for f in findings
         ]
-        or ["- No findings."]
+        or ["- No elevated failure slices found."]
     )
     lines.extend(["", "## 11. Root-cause hypotheses"])
-    lines.extend([f"- {h.source_trace_id}: {h.hypothesis} ({h.confidence})" for h in hypotheses])
+    lines.extend(
+        [f"- {h.source_trace_id}: {h.hypothesis} ({h.confidence})" for h in hypotheses]
+        or ["- No root-cause hypotheses."]
+    )
     lines.extend(
         [
             "",
@@ -136,7 +139,11 @@ def render_markdown_report(
             "- No significance claims.",
             "",
             "## 14. Recommended next steps",
-            "- Investigate highest-uplift slices with additional controlled experiments.",
+            (
+                "- Investigate highest-uplift slices with additional controlled experiments."
+                if findings
+                else "- No elevated slices to prioritize from this run."
+            ),
         ]
     )
     return "\n".join(lines) + "\n"

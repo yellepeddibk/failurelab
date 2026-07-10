@@ -39,11 +39,12 @@ class DeterministicRootCauseAnalyzer(RootCauseAnalyzer):
     ) -> list[RootCauseHypothesis]:
         output: list[RootCauseHypothesis] = []
         for trace in sorted(traces, key=lambda item: item.trace_id):
-            output.append(
-                self._classify_trace(
-                    trace, retrieval_k, repeated_tool_threshold, excessive_steps_threshold
+            if trace.success is False:
+                output.append(
+                    self._classify_trace(
+                        trace, retrieval_k, repeated_tool_threshold, excessive_steps_threshold
+                    )
                 )
-            )
         return output
 
     def _classify_trace(
@@ -149,21 +150,12 @@ class DeterministicRootCauseAnalyzer(RootCauseAnalyzer):
                 ["Expected sources are within top-k and no explicit tool failure exists."],
             )
 
-        if trace.success is False:
-            return _hyp(
-                trace.trace_id,
-                "insufficient_evidence",
-                "low",
-                "RC009",
-                ["Failure present but deterministic rules did not isolate cause."],
-            )
-
         return _hyp(
             trace.trace_id,
             "unknown",
             "low",
-            "RC010",
-            ["No failure condition requiring root-cause hypothesis."],
+            "RC009",
+            ["Trace explicitly failed but no deterministic rule matched."],
         )
 
 

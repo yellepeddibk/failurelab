@@ -21,3 +21,15 @@ def test_markdown_sections_present() -> None:
     )
     assert "## 1. Run overview" in markdown
     assert "## 14. Recommended next steps" in markdown
+
+
+def test_markdown_empty_findings_language() -> None:
+    markdown = render_markdown_report(
+        metrics=[MetricResult("failure_rate", 0.0, "", 1, 0, 0, 1, "ratio", "lower_is_better")],
+        findings=[],
+        hypotheses=[],
+        regression_bundle=RegressionBundle(tests=[]),
+        issues=[],
+    )
+    assert "- No elevated failure slices found." in markdown
+    assert "- No elevated slices to prioritize from this run." in markdown

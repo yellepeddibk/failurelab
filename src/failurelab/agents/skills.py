@@ -162,7 +162,11 @@ class CompareVersionsSkill:
         return SkillResult(
             name=self.name,
             success=True,
-            output={"summary": result.summary, "gate_passed": result.gate_passed},
+            output={
+                "summary": result.summary,
+                "gate_status": result.gate_status,
+                "gate_passed": result.gate_passed,
+            },
         )
 
 

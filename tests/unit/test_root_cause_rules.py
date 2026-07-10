@@ -4,13 +4,12 @@ from failurelab.models.trace import TraceRecord
 from failurelab.root_cause.analyzer import DeterministicRootCauseAnalyzer
 
 
-def _analyze(payload: dict) -> str:
+def _analyze(payload: dict) -> str | None:
     trace = TraceRecord.model_validate(payload)
-    return (
-        DeterministicRootCauseAnalyzer()
-        .analyze([trace], retrieval_k=1, repeated_tool_threshold=1, excessive_steps_threshold=2)[0]
-        .hypothesis
+    findings = DeterministicRootCauseAnalyzer().analyze(
+        [trace], retrieval_k=1, repeated_tool_threshold=1, excessive_steps_threshold=2
     )
+    return findings[0].hypothesis if findings else None
 
 
 def test_root_cause_rule_coverage() -> None:
@@ -165,7 +164,7 @@ def test_root_cause_rule_coverage() -> None:
                 "success": False,
             }
         )
-        == "insufficient_evidence"
+        == "unknown"
     )
     assert (
         _analyze(
@@ -176,5 +175,16 @@ def test_root_cause_rule_coverage() -> None:
                 "success": True,
             }
         )
-        == "unknown"
+        is None
+    )
+    assert (
+        _analyze(
+            {
+                "schema_version": "0.1",
+                "trace_id": "r11",
+                "timestamp": "2026-01-01T00:00:00+00:00",
+                "success": None,
+            }
+        )
+        is None
     )

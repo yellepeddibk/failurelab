@@ -3,15 +3,25 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from failurelab.models.trace import SCHEMA_VERSION
 
 
 class IngestionConfig(BaseModel):
-    mode: str = Field(default="strict", pattern="^(strict|skip-invalid)$")
+    mode: Literal["strict", "skip_invalid"] = "strict"
+
+    @field_validator("mode", mode="before")
+    @classmethod
+    def _normalize_mode(cls, value: str) -> str:
+        if isinstance(value, str):
+            normalized = value.strip().lower().replace("-", "_")
+            if normalized in {"strict", "skip_invalid"}:
+                return normalized
+        return value
 
 
 class EvaluationConfig(BaseModel):
@@ -39,6 +49,7 @@ class ComparisonGateConfig(BaseModel):
 
 class ComparisonConfig(BaseModel):
     fail_on_regression: bool = False
+    scope: Literal["all_valid_traces", "matched_ids"] = "all_valid_traces"
 
 
 class ReportingConfig(BaseModel):

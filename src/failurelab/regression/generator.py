@@ -42,9 +42,13 @@ def generate_regression_tests(
     slices: list[FailureSlice],
     include_thresholds: bool,
 ) -> RegressionBundle:
+    _ = slices
     cases: dict[str, RegressionCase] = {}
     for trace in traces:
         if trace.success is not False:
+            continue
+        query = (trace.query or "").strip()
+        if not query:
             continue
         digest = hashlib.sha256(trace.trace_id.encode("utf-8")).hexdigest()[:10]
         identifier = f"reg-{digest}"
@@ -56,7 +60,7 @@ def generate_regression_tests(
             title=f"Regression for trace {trace.trace_id}",
             source_trace_id=trace.trace_id,
             source_failure_type=trace.failure_type,
-            input={"query": trace.query} if trace.query else {},
+            input={"query": query},
             expected_sources=trace.expected_sources,
             required_tool_names=tool_names,
             latency_threshold_ms=trace.latency_ms if include_thresholds else None,
@@ -67,27 +71,5 @@ def generate_regression_tests(
                 "generated from deterministic failed trace rule",
             ],
             metadata={"project": trace.project, "version": trace.version},
-        )
-    for finding in slices:
-        if not finding.evidence_trace_ids:
-            continue
-        source_id = finding.evidence_trace_ids[0]
-        digest = hashlib.sha256(
-            f"slice:{finding.name}:{finding.value}:{source_id}".encode()
-        ).hexdigest()[:10]
-        identifier = f"slice-{digest}"
-        if identifier in cases:
-            continue
-        cases[identifier] = RegressionCase(
-            id=identifier,
-            title=f"Slice regression for {finding.name}={finding.value}",
-            source_trace_id=source_id,
-            source_failure_type=finding.name,
-            input={},
-            expected_sources=None,
-            required_tool_names=None,
-            tags=["slice", finding.name, finding.value],
-            evidence=[f"support={finding.support}", f"absolute_uplift={finding.absolute_uplift}"],
-            metadata={"slice_name": finding.name, "slice_value": finding.value},
         )
     return RegressionBundle(tests=[cases[key] for key in sorted(cases)])

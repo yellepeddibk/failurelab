@@ -41,6 +41,8 @@ def validate(path: Path, strict: bool) -> IngestionResult:
 def analyze(
     path: Path, output_dir: Path, config: FailureLabConfig, strict: bool, overwrite: bool
 ) -> AnalyzeResult:
+    config = config.model_copy(deep=True)
+    config.ingestion.mode = "strict" if strict else "skip_invalid"
     ingestion = ingest_jsonl(path, strict=strict)
     if strict and ingestion.issues:
         return AnalyzeResult(ingestion=ingestion, metrics=None, comparison=None, output_files=[])
@@ -140,16 +142,60 @@ def compare(
     unmatched_candidate_ids = cast(list[str], result.summary.get("unmatched_candidate_ids", []))
 
     write_json_atomic(comparison_json, result.summary)
+    full_scope = cast(dict[str, dict[str, int]], result.summary.get("comparison_scope", {}))
+    full_counts = full_scope.get("full_dataset", {})
+    matched_counts = full_scope.get("matched_ids", {})
+    configured_thresholds = {
+        "max_failure_rate_increase": config.gate.max_failure_rate_increase,
+        "max_latency_p95_increase_ms": config.gate.max_latency_p95_increase_ms,
+    }
+    full_deltas = cast(dict[str, dict[str, object]], result.summary.get("full_dataset_deltas", {}))
+    matched_deltas = cast(dict[str, dict[str, object]], result.summary.get("matched_id_deltas", {}))
     write_text_atomic(
         comparison_md,
         "\n".join(
             [
                 "# FailureLab Comparison Report",
                 "",
+                f"Gate status: {result.gate_status}",
                 f"Gate passed: {result.gate_passed}",
-                f"Matched IDs: {len(matched_ids)}",
-                f"Unmatched baseline IDs: {len(unmatched_baseline_ids)}",
-                f"Unmatched candidate IDs: {len(unmatched_candidate_ids)}",
+                f"Gate scope: {result.gate_scope}",
+                "",
+                "Configured thresholds:",
+                (
+                    f"- failure_rate delta <= {configured_thresholds['max_failure_rate_increase']}, "
+                    f"latency_p95_ms delta <= {configured_thresholds['max_latency_p95_increase_ms']}"
+                    if any(v is not None for v in configured_thresholds.values())
+                    else "- No gate thresholds configured."
+                ),
+                "",
+                "Full dataset scope:",
+                f"- Baseline traces: {full_counts.get('baseline_trace_count', 0)}",
+                f"- Candidate traces: {full_counts.get('candidate_trace_count', 0)}",
+                "",
+                "Matched-ID scope:",
+                f"- Matched IDs: {matched_counts.get('matched_count', len(matched_ids))}",
+                f"- Unmatched baseline IDs: {matched_counts.get('unmatched_baseline_count', len(unmatched_baseline_ids))}",
+                f"- Unmatched candidate IDs: {matched_counts.get('unmatched_candidate_count', len(unmatched_candidate_ids))}",
+                "",
+                "## Full-dataset deltas",
+                "| metric | baseline | candidate | delta | direction | interpretation |",
+                "| --- | ---: | ---: | ---: | --- | --- |",
+                *[
+                    f"| {name} | {payload.get('baseline')} | {payload.get('candidate')} | {payload.get('delta')} | {payload.get('direction')} | {payload.get('interpretation')} |"
+                    for name, payload in full_deltas.items()
+                ],
+                "",
+                "## Matched-ID deltas",
+                "| metric | baseline | candidate | delta | direction | interpretation |",
+                "| --- | ---: | ---: | ---: | --- | --- |",
+                *[
+                    f"| {name} | {payload.get('baseline')} | {payload.get('candidate')} | {payload.get('delta')} | {payload.get('direction')} | {payload.get('interpretation')} |"
+                    for name, payload in matched_deltas.items()
+                ],
+                "",
+                "Gate violations:",
+                *([f"- {violation.message}" for violation in result.violations] or ["- None."]),
                 "",
                 "No statistical significance claims.",
             ]
@@ -159,7 +205,10 @@ def compare(
     write_json_atomic(
         gate_json,
         {
+            "gate_status": result.gate_status,
             "gate_passed": result.gate_passed,
+            "gate_scope": result.gate_scope,
+            "configured_thresholds": configured_thresholds,
             "violations": [asdict(violation) for violation in result.violations],
         },
     )
