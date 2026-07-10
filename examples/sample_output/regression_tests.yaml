@@ -1,0 +1,11 @@
+- schema_version: "0.1"
+  id: reg-demo
+  title: Regression for trace rag-002
+  review_status: draft
+  source_trace_id: rag-002
+  expected_success: true
+  tags:
+    - trace
+  evidence:
+    - source_trace_id=rag-002
+  metadata: {}

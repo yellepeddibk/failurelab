@@ -1,0 +1,2 @@
+{"schema_version":"0.1","trace_id":"cmp-1","project":"cmp","version":"v1","timestamp":"2026-07-10T10:00:00+00:00","success":true,"retrieved_sources":["a"],"expected_sources":["a"],"citations":["a"],"latency_ms":100.0,"cost_usd":0.01}
+{"schema_version":"0.1","trace_id":"cmp-2","project":"cmp","version":"v1","timestamp":"2026-07-10T10:01:00+00:00","success":false,"retrieved_sources":["b"],"expected_sources":["c"],"citations":[],"latency_ms":150.0,"cost_usd":0.03}

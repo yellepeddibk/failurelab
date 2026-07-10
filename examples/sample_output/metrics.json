@@ -1,0 +1,16 @@
+{
+  "metrics": {
+    "failure_rate": {
+      "value": 0.5,
+      "description": "failure_count / traces_with_known_outcome",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 2,
+      "denominator": 4,
+      "unit": "ratio",
+      "direction": "lower_is_better",
+      "unavailable_reason": null
+    }
+  },
+  "breakdowns": {}
+}

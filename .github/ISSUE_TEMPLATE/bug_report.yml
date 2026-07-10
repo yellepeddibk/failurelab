@@ -1,0 +1,18 @@
+name: Bug report
+description: Report a reproducible bug
+body:
+  - type: markdown
+    attributes:
+      value: "Please sanitize trace content and do not publish sensitive data."
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
