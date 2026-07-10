@@ -24,11 +24,11 @@ jobs:
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             TAG="${GITHUB_REF_NAME#v}"
             PKG=$(python - <<'PY'
-from pathlib import Path
-import tomllib
-print(tomllib.loads(Path('pyproject.toml').read_text())['project']['version'])
-PY
-)
+            from pathlib import Path
+            import tomllib
+            print(tomllib.loads(Path('pyproject.toml').read_text())['project']['version'])
+            PY
+            )
             test "$TAG" = "$PKG"
           fi
       - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808

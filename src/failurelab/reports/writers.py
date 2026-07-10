@@ -34,7 +34,9 @@ KNOWN_OUTPUT_FILES = {
 
 
 def write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
-    _write_text_atomic(path, json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    _write_text_atomic(
+        path, json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    )
 
 
 def write_yaml_atomic(path: Path, payload: Any) -> None:
@@ -47,7 +49,9 @@ def write_text_atomic(path: Path, content: str) -> None:
 
 def _write_text_atomic(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", delete=False, dir=str(path.parent)) as handle:
+    with tempfile.NamedTemporaryFile(
+        "w", encoding="utf-8", delete=False, dir=str(path.parent)
+    ) as handle:
         temp_name = handle.name
         handle.write(content)
         handle.flush()
@@ -86,34 +90,55 @@ def render_markdown_report(
     for metric in metrics:
         if metric.name in {"failure_rate", "known_outcome_count", "total_rows"}:
             lines.append(f"- **{metric.name}**: {metric.value}")
-    lines.extend([
-        "",
-        "## 4. Retrieval",
-        _metric_line(metrics, "retrieval_recall_at_k"),
-        "",
-        "## 5. Citations",
-        _metric_line(metrics, "citation_presence_rate"),
-        "",
-        "## 6. Agent/tool metrics",
-        _metric_line(metrics, "tool_success_rate"),
-        "",
-        "## 7. Latency",
-        _metric_line(metrics, "latency_average_ms"),
-        _metric_line(metrics, "latency_p95_ms"),
-        "",
-        "## 8. Cost",
-        _metric_line(metrics, "cost_total_usd"),
-        _metric_line(metrics, "cost_per_successful_trace_usd"),
-        "",
-        "## 9. Breakdowns",
-        "Breakdowns are available in metrics.json.",
-        "",
-        "## 10. Failure slices",
-    ])
-    lines.extend([f"- {f.name}={f.value} support={f.support} failure_rate={f.failure_rate}" for f in findings] or ["- No findings."])
+    lines.extend(
+        [
+            "",
+            "## 4. Retrieval",
+            _metric_line(metrics, "retrieval_recall_at_k"),
+            "",
+            "## 5. Citations",
+            _metric_line(metrics, "citation_presence_rate"),
+            "",
+            "## 6. Agent/tool metrics",
+            _metric_line(metrics, "tool_success_rate"),
+            "",
+            "## 7. Latency",
+            _metric_line(metrics, "latency_average_ms"),
+            _metric_line(metrics, "latency_p95_ms"),
+            "",
+            "## 8. Cost",
+            _metric_line(metrics, "cost_total_usd"),
+            _metric_line(metrics, "cost_per_successful_trace_usd"),
+            "",
+            "## 9. Breakdowns",
+            "Breakdowns are available in metrics.json.",
+            "",
+            "## 10. Failure slices",
+        ]
+    )
+    lines.extend(
+        [
+            f"- {f.name}={f.value} support={f.support} failure_rate={f.failure_rate}"
+            for f in findings
+        ]
+        or ["- No findings."]
+    )
     lines.extend(["", "## 11. Root-cause hypotheses"])
     lines.extend([f"- {h.source_trace_id}: {h.hypothesis} ({h.confidence})" for h in hypotheses])
-    lines.extend(["", "## 12. Draft regression tests", f"Generated cases: {len(regression_bundle.tests)}", "", "## 13. Limitations", "- Deterministic heuristic analysis only.", "- No significance claims.", "", "## 14. Recommended next steps", "- Investigate highest-uplift slices with additional controlled experiments."])
+    lines.extend(
+        [
+            "",
+            "## 12. Draft regression tests",
+            f"Generated cases: {len(regression_bundle.tests)}",
+            "",
+            "## 13. Limitations",
+            "- Deterministic heuristic analysis only.",
+            "- No significance claims.",
+            "",
+            "## 14. Recommended next steps",
+            "- Investigate highest-uplift slices with additional controlled experiments.",
+        ]
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -133,8 +158,14 @@ def render_run_manifest(
     invalid_count: int,
     generated_files: list[str],
 ) -> dict[str, Any]:
-    digest = hashlib.sha256(input_path.read_bytes()).hexdigest() if input_path.exists() and input_path.is_file() else None
-    run_id = hashlib.sha256(f"{input_path.name}:{digest}:{valid_count}:{invalid_count}".encode("utf-8")).hexdigest()[:12]
+    digest = (
+        hashlib.sha256(input_path.read_bytes()).hexdigest()
+        if input_path.exists() and input_path.is_file()
+        else None
+    )
+    run_id = hashlib.sha256(
+        f"{input_path.name}:{digest}:{valid_count}:{invalid_count}".encode("utf-8")
+    ).hexdigest()[:12]
     return {
         "failurelab_version": __version__,
         "schema_version": SCHEMA_VERSION,
@@ -149,14 +180,18 @@ def render_run_manifest(
     }
 
 
-def render_findings_payload(findings: list[FailureSlice], hypotheses: list[RootCauseHypothesis]) -> dict[str, Any]:
+def render_findings_payload(
+    findings: list[FailureSlice], hypotheses: list[RootCauseHypothesis]
+) -> dict[str, Any]:
     return {
         "failure_slices": [asdict(finding) for finding in findings],
         "root_cause_hypotheses": [asdict(hypothesis) for hypothesis in hypotheses],
     }
 
 
-def render_metrics_payload(metrics: list[MetricResult], breakdowns: dict[str, Any]) -> dict[str, Any]:
+def render_metrics_payload(
+    metrics: list[MetricResult], breakdowns: dict[str, Any]
+) -> dict[str, Any]:
     return {
         "metrics": metric_dict(metrics),
         "breakdowns": breakdowns,
@@ -164,5 +199,8 @@ def render_metrics_payload(metrics: list[MetricResult], breakdowns: dict[str, An
 
 
 def write_invalid_traces(path: Path, issues: list[ValidationIssue]) -> None:
-    lines = [json.dumps(issue.model_dump(exclude_none=True), ensure_ascii=False, sort_keys=True) for issue in issues]
+    lines = [
+        json.dumps(issue.model_dump(exclude_none=True), ensure_ascii=False, sort_keys=True)
+        for issue in issues
+    ]
     _write_text_atomic(path, "\n".join(lines) + ("\n" if lines else ""))
