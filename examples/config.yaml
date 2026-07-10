@@ -1,0 +1,20 @@
+schema_version: "0.1"
+ingestion:
+  mode: skip-invalid
+evaluation:
+  retrieval_k: 2
+  excessive_steps_threshold: 6
+slices:
+  minimum_support: 1
+  maximum_findings: 5
+root_cause:
+  repeated_tool_threshold: 2
+regression_tests:
+  include_thresholds: false
+comparison:
+  fail_on_regression: false
+gate:
+  max_failure_rate_increase: 0.2
+  max_latency_p95_increase_ms: 30
+reporting:
+  include_content: false

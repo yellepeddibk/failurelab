@@ -1,0 +1,456 @@
+{
+  "breakdowns": {
+    "failure_type": [
+      {
+        "average_cost_usd": 0.02,
+        "average_latency_ms": 250.0,
+        "failure_count": 0,
+        "failure_rate": 0.0,
+        "group": "__unknown__",
+        "known_outcomes": 2,
+        "recall_at_k": 1.0,
+        "trace_count": 2
+      },
+      {
+        "average_cost_usd": 0.05,
+        "average_latency_ms": 500.0,
+        "failure_count": 1,
+        "failure_rate": 1.0,
+        "group": "ranking",
+        "known_outcomes": 1,
+        "recall_at_k": 1.0,
+        "trace_count": 1
+      },
+      {
+        "average_cost_usd": 0.03,
+        "average_latency_ms": 410.0,
+        "failure_count": 1,
+        "failure_rate": 1.0,
+        "group": "retrieval_gap",
+        "known_outcomes": 1,
+        "recall_at_k": 0.0,
+        "trace_count": 1
+      }
+    ],
+    "model": [
+      {
+        "average_cost_usd": 0.025,
+        "average_latency_ms": 365.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "model-a",
+        "known_outcomes": 2,
+        "recall_at_k": 0.5,
+        "trace_count": 2
+      },
+      {
+        "average_cost_usd": 0.05,
+        "average_latency_ms": 340.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "model-b",
+        "known_outcomes": 2,
+        "recall_at_k": 1.0,
+        "trace_count": 2
+      }
+    ],
+    "project": [
+      {
+        "average_cost_usd": null,
+        "average_latency_ms": 180.0,
+        "failure_count": 0,
+        "failure_rate": 0.0,
+        "group": "assist",
+        "known_outcomes": 1,
+        "recall_at_k": 1.0,
+        "trace_count": 1
+      },
+      {
+        "average_cost_usd": 0.03333333333333333,
+        "average_latency_ms": 410.0,
+        "failure_count": 2,
+        "failure_rate": 0.6666666666666666,
+        "group": "kb",
+        "known_outcomes": 3,
+        "recall_at_k": 0.6666666666666666,
+        "trace_count": 3
+      }
+    ],
+    "prompt_version": [
+      {
+        "average_cost_usd": 0.025,
+        "average_latency_ms": 365.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "p1",
+        "known_outcomes": 2,
+        "recall_at_k": 0.5,
+        "trace_count": 2
+      },
+      {
+        "average_cost_usd": 0.05,
+        "average_latency_ms": 340.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "p2",
+        "known_outcomes": 2,
+        "recall_at_k": 1.0,
+        "trace_count": 2
+      }
+    ],
+    "retriever_version": [
+      {
+        "average_cost_usd": 0.025,
+        "average_latency_ms": 365.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "ret-1",
+        "known_outcomes": 2,
+        "recall_at_k": 0.5,
+        "trace_count": 2
+      },
+      {
+        "average_cost_usd": 0.05,
+        "average_latency_ms": 340.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "ret-2",
+        "known_outcomes": 2,
+        "recall_at_k": 1.0,
+        "trace_count": 2
+      }
+    ],
+    "version": [
+      {
+        "average_cost_usd": 0.025,
+        "average_latency_ms": 365.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "v1",
+        "known_outcomes": 2,
+        "recall_at_k": 0.5,
+        "trace_count": 2
+      },
+      {
+        "average_cost_usd": 0.05,
+        "average_latency_ms": 340.0,
+        "failure_count": 1,
+        "failure_rate": 0.5,
+        "group": "v2",
+        "known_outcomes": 2,
+        "recall_at_k": 1.0,
+        "trace_count": 2
+      }
+    ]
+  },
+  "metrics": {
+    "agent_average_steps": {
+      "denominator": 0,
+      "description": "Average steps for traces with agent steps",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 4,
+      "numerator": null,
+      "unavailable_reason": "no traces with agent steps",
+      "unit": "count",
+      "value": null
+    },
+    "agent_max_steps": {
+      "denominator": null,
+      "description": "Maximum agent steps",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 4,
+      "numerator": null,
+      "unavailable_reason": "no traces with agent steps",
+      "unit": "count",
+      "value": null
+    },
+    "agent_trace_count": {
+      "denominator": 4,
+      "description": "Traces with agent steps",
+      "direction": "higher_is_neutral",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 0,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "citation_presence_rate": {
+      "denominator": 4,
+      "description": "traces with nonempty answer and at least one citation / traces with nonempty answer",
+      "direction": "higher_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 2,
+      "unavailable_reason": null,
+      "unit": "ratio",
+      "value": 0.5
+    },
+    "cost_average_usd": {
+      "denominator": 3,
+      "description": "Average known cost",
+      "direction": "lower_is_better",
+      "eligible_count": 3,
+      "excluded_count": 1,
+      "numerator": 0.1,
+      "unavailable_reason": null,
+      "unit": "USD",
+      "value": 0.03333333333333333
+    },
+    "cost_count": {
+      "denominator": 4,
+      "description": "Count of known cost values",
+      "direction": "higher_is_neutral",
+      "eligible_count": 3,
+      "excluded_count": 1,
+      "numerator": 3,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 3
+    },
+    "cost_max_usd": {
+      "denominator": null,
+      "description": "Maximum known cost",
+      "direction": "lower_is_better",
+      "eligible_count": 3,
+      "excluded_count": 1,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "USD",
+      "value": 0.05
+    },
+    "cost_min_usd": {
+      "denominator": null,
+      "description": "Minimum known cost",
+      "direction": "lower_is_better",
+      "eligible_count": 3,
+      "excluded_count": 1,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "USD",
+      "value": 0.02
+    },
+    "cost_per_successful_trace_usd": {
+      "denominator": 1,
+      "description": "Known cost per successful trace",
+      "direction": "lower_is_better",
+      "eligible_count": 1,
+      "excluded_count": 3,
+      "numerator": 0.02,
+      "unavailable_reason": null,
+      "unit": "USD",
+      "value": 0.02
+    },
+    "cost_total_usd": {
+      "denominator": 3,
+      "description": "Total known cost",
+      "direction": "lower_is_better",
+      "eligible_count": 3,
+      "excluded_count": 1,
+      "numerator": 0.1,
+      "unavailable_reason": null,
+      "unit": "USD",
+      "value": 0.1
+    },
+    "excessive_step_trace_count": {
+      "denominator": null,
+      "description": "Traces above configured step threshold",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "failure_rate": {
+      "denominator": 4,
+      "description": "failure_count / traces_with_known_outcome",
+      "direction": "lower_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 2,
+      "unavailable_reason": null,
+      "unit": "ratio",
+      "value": 0.5
+    },
+    "known_outcome_count": {
+      "denominator": 4,
+      "description": "Traces with explicit success outcome",
+      "direction": "higher_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 4,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 4
+    },
+    "latency_average_ms": {
+      "denominator": 4,
+      "description": "Average latency",
+      "direction": "lower_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 1410.0,
+      "unavailable_reason": null,
+      "unit": "ms",
+      "value": 352.5
+    },
+    "latency_count": {
+      "denominator": 4,
+      "description": "Count of known latency values",
+      "direction": "higher_is_neutral",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 4,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 4
+    },
+    "latency_max_ms": {
+      "denominator": null,
+      "description": "Maximum latency",
+      "direction": "lower_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "ms",
+      "value": 500.0
+    },
+    "latency_min_ms": {
+      "denominator": null,
+      "description": "Minimum latency",
+      "direction": "lower_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "ms",
+      "value": 180.0
+    },
+    "latency_p50_ms": {
+      "denominator": null,
+      "description": "50th percentile latency",
+      "direction": "lower_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "ms",
+      "value": 365.0
+    },
+    "latency_p95_ms": {
+      "denominator": null,
+      "description": "95th percentile latency",
+      "direction": "lower_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "ms",
+      "value": 486.5
+    },
+    "repeated_tool_call_patterns": {
+      "denominator": null,
+      "description": "Count of repeated normalized tool+argument call patterns",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "retrieval_recall_at_k": {
+      "denominator": 4,
+      "description": "Average recall@k across traces with expected sources",
+      "direction": "higher_is_better",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 3.0,
+      "unavailable_reason": null,
+      "unit": "ratio",
+      "value": 0.75
+    },
+    "tool_call_count": {
+      "denominator": 0,
+      "description": "Tool call steps",
+      "direction": "higher_is_neutral",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": 0,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "tool_failure_count": {
+      "denominator": 0,
+      "description": "Failed tool calls with explicit outcomes",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": 0,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "tool_success_count": {
+      "denominator": 0,
+      "description": "Successful tool calls with explicit outcomes",
+      "direction": "higher_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": 0,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "tool_success_rate": {
+      "denominator": 0,
+      "description": "Successful/known tool outcomes",
+      "direction": "higher_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": "no known tool outcomes",
+      "unit": "ratio",
+      "value": null
+    },
+    "tool_unknown_outcome_count": {
+      "denominator": 0,
+      "description": "Tool calls with unknown outcome",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": 0,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    },
+    "total_rows": {
+      "denominator": 4,
+      "description": "Total rows ingested as valid traces",
+      "direction": "higher_is_neutral",
+      "eligible_count": 4,
+      "excluded_count": 0,
+      "numerator": 4,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 4
+    },
+    "traces_with_tool_errors": {
+      "denominator": null,
+      "description": "Agent traces containing failed tool steps",
+      "direction": "lower_is_better",
+      "eligible_count": 0,
+      "excluded_count": 0,
+      "numerator": null,
+      "unavailable_reason": null,
+      "unit": "count",
+      "value": 0
+    }
+  }
+}

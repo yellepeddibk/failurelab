@@ -1,0 +1,40 @@
+- evidence:
+  - source_trace_id=rag-002
+  - generated from deterministic failed trace rule
+  expected_sources:
+  - src-Z
+  expected_success: true
+  id: reg-1a5975850a
+  input:
+    query: Find incident owner
+  metadata:
+    project: kb
+    version: v1
+  review_status: draft
+  schema_version: '0.1'
+  source_failure_type: retrieval_gap
+  source_trace_id: rag-002
+  tags:
+  - retrieval_gap
+  - trace
+  title: Regression for trace rag-002
+- evidence:
+  - source_trace_id=rag-003
+  - generated from deterministic failed trace rule
+  expected_sources:
+  - src-R
+  expected_success: true
+  id: reg-fc137dd31f
+  input:
+    query: Cómo reiniciar servicio?
+  metadata:
+    project: kb
+    version: v2
+  review_status: draft
+  schema_version: '0.1'
+  source_failure_type: ranking
+  source_trace_id: rag-003
+  tags:
+  - ranking
+  - trace
+  title: Regression for trace rag-003

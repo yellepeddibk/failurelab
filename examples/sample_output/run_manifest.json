@@ -1,0 +1,48 @@
+{
+  "failurelab_version": "0.1.0",
+  "generated_files": [
+    "findings.json",
+    "metrics.json",
+    "regression_tests.yaml",
+    "report.md",
+    "run_manifest.json"
+  ],
+  "input_file": "rag_traces.jsonl",
+  "input_sha256": "204d40890aae4fb3f659f84e8b05551e415253bd6258c1b232c3ee89dfc83a4e",
+  "invalid_row_count": 0,
+  "resolved_config": {
+    "comparison": {
+      "fail_on_regression": false,
+      "scope": "all_valid_traces"
+    },
+    "evaluation": {
+      "excessive_steps_threshold": 8,
+      "retrieval_k": 3
+    },
+    "gate": {
+      "max_failure_rate_increase": null,
+      "max_latency_p95_increase_ms": null
+    },
+    "ingestion": {
+      "mode": "strict"
+    },
+    "regression_tests": {
+      "include_thresholds": false
+    },
+    "reporting": {
+      "include_content": false
+    },
+    "root_cause": {
+      "repeated_tool_threshold": 2
+    },
+    "schema_version": "0.1",
+    "slices": {
+      "maximum_findings": 10,
+      "minimum_support": 2
+    }
+  },
+  "run_id": "d086130a76d0",
+  "run_timestamp": "2026-07-10T21:24:10.668466+00:00",
+  "schema_version": "0.1",
+  "valid_trace_count": 4
+}
