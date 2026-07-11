@@ -57,7 +57,7 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - run: pytest --junitxml=pytest-${{ matrix.python-version }}.xml
       - if: always()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-results-${{ matrix.python-version }}
           path: |
@@ -98,7 +98,7 @@ jobs:
           /tmp/failurelab-wheel-smoke/bin/python -m pip install dist/*.whl
           /tmp/failurelab-wheel-smoke/bin/python -c "import failurelab; print(failurelab.__version__)"
           /tmp/failurelab-wheel-smoke/bin/failurelab --version
-      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: dist
           path: dist/
