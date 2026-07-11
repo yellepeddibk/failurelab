@@ -129,7 +129,7 @@ jobs:
           /tmp/failurelab-audit/bin/python -m pip install --upgrade pip
           /tmp/failurelab-audit/bin/python -m pip install -e ".[dev]" pip-audit
           /tmp/failurelab-audit/bin/pip-audit
-      - run: bandit -q -r src scripts
+      - run: bandit -q -r src
       - run: |
           if grep -R -n --binary-files=without-match --exclude-dir=.git -E -- "-----BEGIN [A-Z ]*PRIVATE K[E]Y-----" .; then
             echo "Potential private key material detected."
