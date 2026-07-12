@@ -32,6 +32,7 @@ After changing the live ruleset in the GitHub UI, a maintainer should export the
 - Require review conversation resolution
 - Squash is the only allowed merge method
 - Require the `quality-gate` status check to pass
+- Require the `CodeQL` status check to pass
 - Require branches to be up to date before merging
 - Repository administrators may bypass only for pull requests
 - Direct pushes to `main` remain blocked
