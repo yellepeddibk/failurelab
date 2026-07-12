@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for Claude Code in this repository. Use this file as an index: read the pointed file before changing the area it covers, instead of rediscovering the repository each session.
+Guidance for Claude Code in this repository. Use this file as an index: read the pointed file before changing the area it covers, instead of rediscovering the repository each session. Detailed rules for implementing an approved task live in `.claude/skills/failurelab-execute/SKILL.md`; this file does not duplicate them.
 
 ## Project
 
@@ -64,11 +64,16 @@ Coverage is collected (`--cov=failurelab --cov-branch`) but no fail-under thresh
 
 ## Workflow
 
-- Never commit directly to `main`. Branch prefixes: `feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`.
+- Never commit directly to `main`. Create branches and commits only for explicitly requested work. Branch prefixes: `feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`.
 - `main` is protected by the `protect-main` ruleset managed in the GitHub UI (squash-only, 1 approval, `quality-gate` and `CodeQL` required checks, branches must be up to date). See `docs/PROTECT_MAIN.md`. The tracked JSON is an export snapshot, not automation.
 - The maintainer performs all remote operations (push, PR creation, merge) manually. Do not fetch, pull, push, merge, open PRs, or alter authentication from Claude sessions. Provide exact commands for the maintainer instead.
-- Use `/failurelab-execute <task>` to implement one approved task end to end (branch, implement, validate, single local commit).
+- Never commit while a required check is failing. Stage explicit paths only; never `git add -A`.
+- Do not commit generated outputs: report directories, `coverage.xml`, and `dist/` are gitignored. `examples/sample_output/` is the deliberately tracked sample.
 - Validate behavior, not just exit codes: when a change affects analysis or reports, run the CLI against `examples/*.jsonl` and inspect the generated artifacts.
+
+## Skill usage
+
+Use `/failurelab-execute <task>` to implement one approved task end to end (fresh branch, smallest complete change, validation, exactly one local commit). The skill owns the interpretation gate, acceptance criteria, validation sequence, commit rules, and report format; follow it rather than improvising an equivalent workflow inline.
 
 ## Writing rules
 
@@ -78,5 +83,5 @@ Coverage is collected (`--cov=failurelab --cov-branch`) but no fail-under thresh
 
 ## Environment notes
 
-- The repository may live under OneDrive on Windows. File locking can break directory deletion and git housekeeping; avoid aggressive cleanup, garbage collection, and destructive git commands. `GIT_ASK_YESNO=false` avoids stuck retry prompts.
-- The `gh` command on PATH is not the GitHub CLI. Do not use or modify it.
+- Checkouts inside cloud-synced directories (OneDrive, Dropbox, and similar) can hit file locking that breaks directory deletion and git housekeeping, especially on Windows. Avoid aggressive cleanup, garbage collection, and destructive git commands; `GIT_ASK_YESNO=false` avoids stuck retry prompts.
+- Do not assume a `gh` command on PATH is the official GitHub CLI; verify what it is before using it. Remote operations remain manual regardless.
