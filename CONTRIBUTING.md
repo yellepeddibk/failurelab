@@ -42,7 +42,7 @@ twine check dist/*
 
 ## Branch and commit conventions
 
-- Branch prefixes: `feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`
+- Branch prefixes: `feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`
 - Conventional-style commits are encouraged (`feat:`, `fix:`, etc.).
 
 ## PR checklist
