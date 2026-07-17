@@ -8,12 +8,15 @@ import os
 import tempfile
 from dataclasses import asdict
 from datetime import datetime, timezone
+from math import isfinite
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
-from failurelab import __version__
+from failurelab._version import __version__
+from failurelab.comparison.service import ComparisonResult
+from failurelab.config.settings import FailureLabConfig
 from failurelab.discovery.slices import FailureSlice
 from failurelab.evals.metrics import MetricResult, metric_dict
 from failurelab.models.trace import SCHEMA_VERSION, ValidationIssue
@@ -159,26 +162,23 @@ def _metric_line(metrics: list[MetricResult], name: str) -> str:
 
 
 def render_run_manifest(
-    input_path: Path,
+    *,
+    input_name: str,
+    input_sha256: str | None,
     resolved_config: dict[str, Any],
     valid_count: int,
     invalid_count: int,
     generated_files: list[str],
 ) -> dict[str, Any]:
-    digest = (
-        hashlib.sha256(input_path.read_bytes()).hexdigest()
-        if input_path.exists() and input_path.is_file()
-        else None
-    )
     run_id = hashlib.sha256(
-        f"{input_path.name}:{digest}:{valid_count}:{invalid_count}".encode("utf-8")
+        f"{input_name}:{input_sha256}:{valid_count}:{invalid_count}".encode("utf-8")
     ).hexdigest()[:12]
     return {
         "failurelab_version": __version__,
         "schema_version": SCHEMA_VERSION,
         "resolved_config": resolved_config,
-        "input_file": input_path.name,
-        "input_sha256": digest,
+        "input_file": input_name,
+        "input_sha256": input_sha256,
         "valid_trace_count": valid_count,
         "invalid_row_count": invalid_count,
         "generated_files": sorted(generated_files),
@@ -211,3 +211,101 @@ def write_invalid_traces(path: Path, issues: list[ValidationIssue]) -> None:
         for issue in issues
     ]
     _write_text_atomic(path, "\n".join(lines) + ("\n" if lines else ""))
+
+
+def render_comparison_markdown(result: ComparisonResult, config: FailureLabConfig) -> str:
+    matched_ids = cast(list[str], result.summary.get("matched_ids", []))
+    unmatched_baseline_ids = cast(list[str], result.summary.get("unmatched_baseline_ids", []))
+    unmatched_candidate_ids = cast(list[str], result.summary.get("unmatched_candidate_ids", []))
+    full_scope = cast(dict[str, dict[str, int]], result.summary.get("comparison_scope", {}))
+    full_counts = full_scope.get("full_dataset", {})
+    matched_counts = full_scope.get("matched_ids", {})
+    configured_thresholds = {
+        "max_failure_rate_increase": config.gate.max_failure_rate_increase,
+        "max_latency_p95_increase_ms": config.gate.max_latency_p95_increase_ms,
+    }
+    full_deltas = cast(dict[str, dict[str, object]], result.summary.get("full_dataset_deltas", {}))
+    matched_deltas = cast(dict[str, dict[str, object]], result.summary.get("matched_id_deltas", {}))
+    return (
+        "\n".join(
+            [
+                "# FailureLab Comparison Report",
+                "",
+                f"Gate status: {result.gate_status}",
+                f"Gate evaluated: {'no' if result.gate_status == 'not_configured' else 'yes'}",
+                (
+                    "Gate result: not applicable"
+                    if result.gate_status == "not_configured"
+                    else f"Gate result: {result.gate_status}"
+                ),
+                f"Gate scope: {result.gate_scope}",
+                "",
+                "Configured thresholds:",
+                (
+                    f"- failure_rate delta <= {_format_markdown_value(configured_thresholds['max_failure_rate_increase'])}, "
+                    f"latency_p95_ms delta <= {_format_markdown_value(configured_thresholds['max_latency_p95_increase_ms'])}"
+                    if any(v is not None for v in configured_thresholds.values())
+                    else "- No gate thresholds configured."
+                ),
+                "",
+                "Full dataset scope:",
+                f"- Baseline traces: {full_counts.get('baseline_trace_count', 0)}",
+                f"- Candidate traces: {full_counts.get('candidate_trace_count', 0)}",
+                "",
+                "Matched-ID scope:",
+                f"- Matched IDs: {matched_counts.get('matched_count', len(matched_ids))}",
+                f"- Unmatched baseline IDs: {matched_counts.get('unmatched_baseline_count', len(unmatched_baseline_ids))}",
+                f"- Unmatched candidate IDs: {matched_counts.get('unmatched_candidate_count', len(unmatched_candidate_ids))}",
+                "",
+                "## Full-dataset deltas",
+                "| metric | baseline | candidate | delta | direction | interpretation |",
+                "| --- | ---: | ---: | ---: | --- | --- |",
+                *[
+                    f"| {name} | {_format_markdown_value(payload.get('baseline'))} | {_format_markdown_value(payload.get('candidate'))} | {_format_markdown_value(payload.get('delta'))} | {payload.get('direction')} | {payload.get('interpretation')} |"
+                    for name, payload in full_deltas.items()
+                ],
+                "",
+                "## Matched-ID deltas",
+                "| metric | baseline | candidate | delta | direction | interpretation |",
+                "| --- | ---: | ---: | ---: | --- | --- |",
+                *[
+                    f"| {name} | {_format_markdown_value(payload.get('baseline'))} | {_format_markdown_value(payload.get('candidate'))} | {_format_markdown_value(payload.get('delta'))} | {payload.get('direction')} | {payload.get('interpretation')} |"
+                    for name, payload in matched_deltas.items()
+                ],
+                "",
+                "Gate violations:",
+                *([f"- {violation.message}" for violation in result.violations] or ["- none."]),
+                "",
+                "No statistical significance claims.",
+            ]
+        )
+        + "\n"
+    )
+
+
+def render_gate_payload(result: ComparisonResult, config: FailureLabConfig) -> dict[str, Any]:
+    configured_thresholds = {
+        "max_failure_rate_increase": config.gate.max_failure_rate_increase,
+        "max_latency_p95_increase_ms": config.gate.max_latency_p95_increase_ms,
+    }
+    return {
+        "gate_status": result.gate_status,
+        "gate_passed": result.gate_passed,
+        "gate_scope": result.gate_scope,
+        "configured_thresholds": configured_thresholds,
+        "violations": [asdict(violation) for violation in result.violations],
+    }
+
+
+def _format_markdown_value(value: object) -> str:
+    if value is None:
+        return "unavailable"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        if not isfinite(value):
+            return "unavailable"
+        return format(value, ".12g")
+    return str(value)

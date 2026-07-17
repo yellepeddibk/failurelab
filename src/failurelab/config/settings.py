@@ -8,6 +8,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from failurelab.exceptions import ConfigError
 from failurelab.models.trace import SCHEMA_VERSION
 
 
@@ -77,11 +78,11 @@ def load_config(path: Path | None = None) -> FailureLabConfig:
     if loaded is None:
         loaded = {}
     if not isinstance(loaded, dict):
-        raise ValueError("configuration file root must be a mapping")
+        raise ConfigError("configuration file root must be a mapping")
     try:
         return FailureLabConfig.model_validate(loaded)
     except ValidationError as error:
         detail = "; ".join(
             f"{'.'.join(map(str, issue['loc']))}: {issue['msg']}" for issue in error.errors()
         )
-        raise ValueError(f"invalid configuration: {detail}") from error
+        raise ConfigError(f"invalid configuration: {detail}") from error

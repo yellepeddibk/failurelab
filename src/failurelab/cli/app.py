@@ -10,9 +10,11 @@ from typing import Literal
 import typer
 from rich.console import Console
 
-from failurelab import __version__
+from failurelab import api
+from failurelab._version import __version__
 from failurelab.config.settings import FailureLabConfig, load_config
-from failurelab.services.pipeline import analyze, compare, validate
+from failurelab.exceptions import InvalidTraceDataError
+from failurelab.ingestion.jsonl import ingest_jsonl
 
 app = typer.Typer(help="FailureLab deterministic reliability analysis")
 console = Console(no_color=bool(os.getenv("NO_COLOR")))
@@ -77,7 +79,7 @@ def validate_cmd(
         raise typer.Exit(code=ExitCode.CLI_CONFIG_ERROR) from error
     strict_mode = cfg.ingestion.mode == "strict"
 
-    ingestion = validate(path, strict=strict_mode)
+    ingestion = ingest_jsonl(path, strict=strict_mode)
     console.print(
         f"valid={len(ingestion.traces)} invalid={len(ingestion.issues)} duplicates={ingestion.duplicate_ids} blanks={ingestion.blank_rows}"
     )
@@ -123,31 +125,33 @@ def analyze_cmd(
     strict_mode = cfg.ingestion.mode == "strict"
 
     try:
-        result = analyze(path, output, cfg, strict=strict_mode, overwrite=overwrite)
-    except FileExistsError as error:
-        console.print(str(error))
-        raise typer.Exit(code=ExitCode.FILE_ERROR) from error
-    except OSError as error:
-        console.print(str(error))
-        raise typer.Exit(code=ExitCode.FILE_ERROR) from error
+        report = api.analyze(path, config=cfg, strict=strict_mode)
+    except InvalidTraceDataError as error:
+        issue = error.issues[0]
+        console.print(
+            f"strict validation error row={issue.row_number} field={issue.field_path} message={issue.message}"
+        )
+        raise typer.Exit(code=ExitCode.INVALID_TRACE_DATA) from error
     except Exception as error:
         if debug:
             raise
         console.print(f"analysis failed: {error}")
         raise typer.Exit(code=ExitCode.EVALUATION_REPORT_ERROR) from error
 
-    if result.ingestion.issues and strict_mode:
-        issue = result.ingestion.issues[0]
-        console.print(
-            f"strict validation error row={issue.row_number} field={issue.field_path} message={issue.message}"
-        )
-        raise typer.Exit(code=ExitCode.INVALID_TRACE_DATA)
+    try:
+        written = report.write(output, overwrite=overwrite)
+    except FileExistsError as error:
+        console.print(str(error))
+        raise typer.Exit(code=ExitCode.FILE_ERROR) from error
+    except OSError as error:
+        console.print(str(error))
+        raise typer.Exit(code=ExitCode.FILE_ERROR) from error
 
     if not quiet:
         console.print(
-            f"valid={len(result.ingestion.traces)} invalid={len(result.ingestion.issues)}"
+            f"valid={report.data_quality.valid_count} invalid={report.data_quality.invalid_count}"
         )
-        for file_path in result.output_files:
+        for file_path in written:
             console.print(str(file_path))
 
 
@@ -171,20 +175,19 @@ def compare_cmd(
     except Exception as error:
         raise typer.Exit(code=ExitCode.CLI_CONFIG_ERROR) from error
 
-    result = compare(baseline_path, candidate_path, output, cfg, overwrite)
-    if result.ingestion.issues:
-        issue = result.ingestion.issues[0]
+    try:
+        report = api.compare(baseline_path, candidate_path, config=cfg)
+    except InvalidTraceDataError as error:
+        issue = error.issues[0]
         console.print(f"error row={issue.row_number} message={issue.message}")
-        raise typer.Exit(code=ExitCode.INVALID_TRACE_DATA)
+        raise typer.Exit(code=ExitCode.INVALID_TRACE_DATA) from error
 
-    if result.comparison is None:
-        raise typer.Exit(code=ExitCode.EVALUATION_REPORT_ERROR)
-
-    console.print(f"gate_status={result.comparison.gate_status}")
-    console.print(f"gate_passed={result.comparison.gate_passed}")
-    for output_path in result.output_files:
+    written = report.write(output, overwrite=overwrite)
+    console.print(f"gate_status={report.gate_status}")
+    console.print(f"gate_passed={report.gate_passed}")
+    for output_path in written:
         console.print(str(output_path))
-    if cfg.comparison.fail_on_regression and result.comparison.gate_passed is False:
+    if cfg.comparison.fail_on_regression and report.gate_passed is False:
         raise typer.Exit(code=ExitCode.QUALITY_GATE_FAILED)
 
 
