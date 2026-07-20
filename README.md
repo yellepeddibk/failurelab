@@ -1,6 +1,7 @@
 # FailureLab
 
 [![CI](https://github.com/yellepeddibk/failurelab/actions/workflows/ci.yml/badge.svg)](https://github.com/yellepeddibk/failurelab/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/failurelab)](https://pypi.org/project/failurelab/)
 ![Python](https://img.shields.io/badge/python-3.11%20to%203.14-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
