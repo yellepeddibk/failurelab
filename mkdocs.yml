@@ -1,0 +1,51 @@
+site_name: FailureLab
+site_description: Deterministic AI reliability analysis for RAG and agent traces
+site_url: https://yellepeddibk.github.io/failurelab/
+repo_url: https://github.com/yellepeddibk/failurelab
+repo_name: yellepeddibk/failurelab
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Concepts:
+      - Trace schema: trace-schema.md
+      - Metrics: metrics.md
+      - Regression tests: regression-tests.md
+      - Privacy: privacy.md
+      - Architecture: architecture.md
+      - Investigation agent: agent-architecture.md
+  - CLI: cli.md
+  - Python API: api.md
+  - Contributing: contributing.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+exclude_docs: |
+  RELEASING.md
+  PROTECT_MAIN.md
+  design/

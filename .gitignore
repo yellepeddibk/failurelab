@@ -26,6 +26,9 @@ dist/
 *.egg-info/
 .eggs/
 
+# Docs site build output
+site/
+
 # Runtime reports
 /reports/
 
