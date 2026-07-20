@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.0] - Unreleased
+## [0.2.0] - 2026-07-20
 ### Added
 - Public Python API: `failurelab.analyze`, `failurelab.compare`, and `failurelab.validate`, returning in-memory `AnalysisReport`, `ComparisonReport`, and `ValidationReport` objects that perform no filesystem writes unless `write()` is called explicitly.
 - Report projections (`to_dict`, `to_markdown`, and typed `to_*_dict` accessors), plus `data_quality.analyzable` and `ComparisonReport.is_comparable` signals so zero-usable-trace inputs are reported honestly rather than raising.
