@@ -8,7 +8,7 @@ FailureLab is a local-first, deterministic AI reliability toolkit for RAG and ag
 
 ## Hard constraints
 
-- No LLM dependency, network calls, database, web server, frontend, or agent framework unless the maintainer explicitly requests it. Core analysis must stay deterministic and run offline.
+- Core analysis stays deterministic and offline: no network calls, database, web server, frontend, or agent framework in the core. The opt-in interpretation layer (`failurelab.interpret`, `src/failurelab/llm/`) may call a user-constructed LLM provider, but it is off by default, never activated by environment presence, sends no raw content or trace IDs by default, makes exactly one call with no agent loop, performs no network call in core CI, and keeps provider SDKs in optional per-provider extras. No other LLM, network, database, web server, frontend, or agent-framework additions unless the maintainer explicitly requests them.
 - Never claim causal inference, statistical significance, guaranteed root-cause identification, or production readiness.
 - Never weaken tests, typing, linting, security checks, or CI to make something pass.
 - Prefer the smallest complete change. No drive-by cleanup, reformatting, or dependency bumps outside the task.
@@ -27,6 +27,7 @@ FailureLab is a local-first, deterministic AI reliability toolkit for RAG and ag
 | Report writers, manifests | `src/failurelab/reports/writers.py` | `docs/privacy.md` |
 | Orchestration for CLI commands | `src/failurelab/services/pipeline.py` | `docs/architecture.md` |
 | Deterministic skills and investigation agent | `src/failurelab/agents/skills.py` | `docs/agent-architecture.md` |
+| Optional interpretation layer (opt-in LLM) | `src/failurelab/llm/` | `docs/interpretation.md` |
 | Typer CLI and exit codes | `src/failurelab/cli/app.py` | |
 | Config models and loading | `src/failurelab/config/settings.py` | |
 | Tests (unit, integration, golden, property, smoke) | `tests/` | |

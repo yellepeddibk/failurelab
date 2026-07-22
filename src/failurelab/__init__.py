@@ -10,6 +10,7 @@ from failurelab._version import __version__
 from failurelab.api import analyze, compare, validate
 from failurelab.config.settings import FailureLabConfig, load_config
 from failurelab.exceptions import ConfigError, FailureLabError, InvalidTraceDataError
+from failurelab.llm import InterpretationReport, interpret
 from failurelab.models.trace import AgentStep, TraceRecord
 from failurelab.reports.models import AnalysisReport, ComparisonReport, ValidationReport
 
@@ -20,12 +21,14 @@ __all__ = [
     "ConfigError",
     "FailureLabConfig",
     "FailureLabError",
+    "InterpretationReport",
     "InvalidTraceDataError",
     "TraceRecord",
     "ValidationReport",
     "__version__",
     "analyze",
     "compare",
+    "interpret",
     "load_config",
     "validate",
 ]
