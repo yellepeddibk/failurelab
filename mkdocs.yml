@@ -25,6 +25,7 @@ nav:
       - Investigation agent: agent-architecture.md
   - CLI: cli.md
   - Python API: api.md
+  - Interpretation: interpretation.md
   - Contributing: contributing.md
 
 plugins:
