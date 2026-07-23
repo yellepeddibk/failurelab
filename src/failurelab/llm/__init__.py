@@ -13,6 +13,7 @@ from failurelab.llm.errors import (
     LLMError,
     MissingLLMDependencyError,
     ProviderError,
+    SanitizedProviderError,
 )
 from failurelab.llm.fake import FakeProvider
 from failurelab.llm.interpret import interpret
@@ -24,6 +25,7 @@ from failurelab.llm.models import (
     InterpretationReport,
     Observation,
 )
+from failurelab.llm.ollama import OllamaProvider
 from failurelab.llm.protocol import (
     InterpretationProvider,
     InterpretationRequest,
@@ -43,7 +45,9 @@ __all__ = [
     "LLMError",
     "MissingLLMDependencyError",
     "Observation",
+    "OllamaProvider",
     "ProviderError",
     "ProviderResponse",
+    "SanitizedProviderError",
     "interpret",
 ]
