@@ -12,11 +12,20 @@ Pass a list of trace dictionaries (or `TraceRecord` objects). Nothing is written
 import failurelab as fl
 
 traces = [
-    {"schema_version": "0.1", "trace_id": "t1",
-     "timestamp": "2026-01-01T00:00:00+00:00", "success": True},
-    {"schema_version": "0.1", "trace_id": "t2",
-     "timestamp": "2026-01-01T00:01:00+00:00", "success": False,
-     "query": "Who owns this incident?", "failure_type": "retrieval_failure"},
+    {
+        "schema_version": "0.1",
+        "trace_id": "t1",
+        "timestamp": "2026-01-01T00:00:00+00:00",
+        "success": True,
+    },
+    {
+        "schema_version": "0.1",
+        "trace_id": "t2",
+        "timestamp": "2026-01-01T00:01:00+00:00",
+        "success": False,
+        "query": "Who owns this incident?",
+        "failure_type": "retrieval_failure",
+    },
 ]
 
 report = fl.analyze(traces)
@@ -37,10 +46,10 @@ report = fl.analyze("traces.jsonl")
 Inspect the report:
 
 ```python
-report.failure_slices          # segments with elevated failure
-report.root_cause_hypotheses   # per-failed-trace hypotheses
-report.to_markdown()           # the human-readable report as a string
-report.to_dict()               # a JSON-serializable view of everything
+report.failure_slices  # segments with elevated failure
+report.root_cause_hypotheses  # per-failed-trace hypotheses
+report.to_markdown()  # the human-readable report as a string
+report.to_dict()  # a JSON-serializable view of everything
 ```
 
 ## Validate input
@@ -48,7 +57,7 @@ report.to_dict()               # a JSON-serializable view of everything
 `validate` inspects the complete input and reports every issue. It never raises for invalid data.
 
 ```python
-result = fl.validate("traces.jsonl")   # or an iterable of dicts / TraceRecord
+result = fl.validate("traces.jsonl")  # or an iterable of dicts / TraceRecord
 print(result.is_valid, result.data_quality.invalid_count)
 ```
 
