@@ -71,11 +71,11 @@ report = fl.analyze("traces.jsonl")
 ### Working with the report
 
 ```python
-report.metric("failure_rate").value   # a single metric result
-report.failure_slices                  # segments with elevated failure
-report.root_cause_hypotheses           # per-failed-trace hypotheses
-report.to_markdown()                   # the human-readable report as a string
-report.to_dict()                       # a JSON-serializable view of everything
+report.metric("failure_rate").value  # a single metric result
+report.failure_slices  # segments with elevated failure
+report.root_cause_hypotheses  # per-failed-trace hypotheses
+report.to_markdown()  # the human-readable report as a string
+report.to_dict()  # a JSON-serializable view of everything
 ```
 
 ### Validate input
@@ -85,7 +85,7 @@ report.to_dict()                       # a JSON-serializable view of everything
 ```python
 import failurelab as fl
 
-result = fl.validate("traces.jsonl")   # or an iterable of dicts / TraceRecord
+result = fl.validate("traces.jsonl")  # or an iterable of dicts / TraceRecord
 print(result.is_valid, result.data_quality.invalid_count)
 for issue in result.issues:
     print(issue.row_number, issue.error_type, issue.message)

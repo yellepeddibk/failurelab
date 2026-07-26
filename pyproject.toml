@@ -35,7 +35,10 @@ dev = [
   "pytest-cov>=5.0.0",
   "hypothesis>=6.112.1",
   "mypy>=1.11.1",
-  "ruff>=0.6.2",
+  # Pinned exactly: a formatter release can change formatting rules and turn
+  # `ruff format --check` red on every open pull request. Dependabot proposes
+  # upgrades so the version bump and any reformatting land together.
+  "ruff==0.16.0",
   "pre-commit>=3.8.0",
   "build>=1.2.2",
   "twine>=5.1.1",
