@@ -56,6 +56,7 @@ The provider protocol is vendor-neutral:
 ```python
 class InterpretationProvider(Protocol):
     name: str
+
     def generate(self, request: InterpretationRequest) -> ProviderResponse: ...
 ```
 
