@@ -60,10 +60,51 @@ class InterpretationProvider(Protocol):
     def generate(self, request: InterpretationRequest) -> ProviderResponse: ...
 ```
 
-Real adapters ship in later releases behind their own optional extras (a local
-Ollama adapter, then a cloud adapter). You bring your own provider and key.
-FailureLab never owns, proxies, or pays for model usage, and it does not read or
-load `.env` files on your behalf.
+You bring your own provider and model. FailureLab never owns, proxies, or pays
+for model usage, and it does not read or load `.env` files on your behalf.
+
+### Ollama (local or self-hosted, no API key)
+
+`OllamaProvider` targets a **local or self-hosted** Ollama server and relies on
+its structured-output support. Ollama Cloud is not supported. It uses only the
+Python standard library, so it adds no dependency and needs no extra. The Ollama
+runtime and the model are separate prerequisites that you install yourself:
+
+```bash
+python -m pip install failurelab
+# Install Ollama separately from https://ollama.com
+ollama pull <chosen-model>
+```
+
+`pip install failurelab` never installs Ollama and never downloads a model.
+
+```python
+import failurelab as fl
+from failurelab.llm import OllamaProvider
+
+provider = OllamaProvider(model="gemma3", host="http://localhost:11434")
+interpretation = fl.interpret(report, provider=provider, timeout=300.0)
+```
+
+Note the explicit `timeout`. Local inference on CPU can take several minutes for
+a single request, which exceeds the provider-neutral 30-second default. Raise the
+timeout for CPU-only machines, and lower it when running on a GPU or with a
+smaller and faster model. The default is deliberately conservative and unchanged.
+
+Behavior worth knowing:
+
+- The model must be named explicitly and pulled beforehand. The adapter never
+  selects, downloads, or pulls a model for you.
+- Constructing the provider performs no network call. One `interpret` call makes
+  exactly one non-streaming `POST /api/chat` request, with `temperature=0` and a
+  full JSON schema for structured output.
+- No environment variable is read (including `OLLAMA_API_KEY`), and there are no
+  retries, repair calls, or preflight requests.
+- Errors are actionable but sanitized, naming only the host, model, and HTTP
+  status. A missing model suggests `ollama pull <model>`.
+- Setting `host` to anything other than localhost transmits the structured
+  evidence to that machine or service. Raw content and trace IDs remain excluded
+  unless you opt in through `failurelab.interpret`.
 
 ## Cost and privacy controls
 

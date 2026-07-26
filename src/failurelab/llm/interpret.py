@@ -15,7 +15,11 @@ from datetime import datetime, timezone
 from typing import cast
 
 from failurelab._version import __version__
-from failurelab.llm.errors import InterpretationParseError, ProviderError
+from failurelab.llm.errors import (
+    InterpretationParseError,
+    ProviderError,
+    SanitizedProviderError,
+)
 from failurelab.llm.evidence import PROMPT_TEMPLATE_VERSION, pack_evidence
 from failurelab.llm.models import (
     Confidence,
@@ -101,6 +105,9 @@ def interpret(
 
     try:
         response = provider.generate(request)
+    except SanitizedProviderError:
+        # Only errors an adapter explicitly marked as safe pass through unchanged.
+        raise
     except Exception as error:
         # Suppress the provider exception chain: its message may carry credentials.
         raise ProviderError(
