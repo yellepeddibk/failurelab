@@ -4,11 +4,44 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    groups:
+      # Batch routine Python dependency updates into one reviewable pull
+      # request. This matches every detected pip dependency, not only the
+      # pinned CI tools. Major upgrades stay separate so a breaking change is
+      # easy to isolate.
+      python-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
     groups:
+      # CodeQL init and analyze must run the same version. Updating them in
+      # separate pull requests leaves them mismatched and the analyze step
+      # fails, which blocks both updates.
       codeql-action:
         patterns:
           - "github/codeql-action*"
+      # These two actions form one deployment workflow and should be upgraded
+      # and validated together rather than in separate pull requests.
+      pages:
+        patterns:
+          - "actions/upload-pages-artifact"
+          - "actions/deploy-pages"
+      # Everything else: batch routine updates, but leave major upgrades as
+      # individual pull requests so a breaking change is easy to isolate.
+      actions-minor-patch:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "github/codeql-action*"
+          - "actions/upload-pages-artifact"
+          - "actions/deploy-pages"
+        update-types:
+          - "minor"
+          - "patch"

@@ -34,22 +34,26 @@ dev = [
   "pytest>=8.3.2",
   "pytest-cov>=5.0.0",
   "hypothesis>=6.112.1",
-  "mypy>=1.11.1",
-  # Pinned exactly: a formatter release can change formatting rules and turn
-  # `ruff format --check` red on every open pull request. Dependabot proposes
-  # upgrades so the version bump and any reformatting land together.
-  "ruff==0.16.0",
   "pre-commit>=3.8.0",
   "build>=1.2.2",
   "twine>=5.1.1",
   "check-wheel-contents>=0.6.0",
   "pip-audit>=2.7.3",
-  "bandit>=1.7.9",
-  "codespell>=2.3.0",
+  # Tools whose rules gate CI are pinned exactly. A new release can add a rule
+  # or change formatting and turn every open pull request red with no
+  # dependency update to review, because a floating constraint already allows
+  # the newest version. Pinning turns those upgrades into Dependabot pull
+  # requests, so the version bump and any required fixes land together.
+  "ruff==0.16.0",
+  "mypy==2.3.0",
+  "bandit==1.9.4",
+  "codespell==2.4.3",
 ]
 docs = [
   "mkdocs>=1.6",
-  "mkdocs-material>=9.5",
+  # Pinned exactly: a Material release can introduce new strict-mode warnings
+  # that fail `mkdocs build --strict`.
+  "mkdocs-material==9.7.7",
   "mkdocstrings[python]>=0.26",
 ]
 
