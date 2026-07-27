@@ -18,7 +18,8 @@ Averages can hide failure concentration by model, prompt, retriever, or tool seq
 python -m pip install "failurelab>=0.2.0"
 ```
 
-The importable Python API described below is available from 0.2.0 onward. Until 0.2.0 is published to PyPI, install from source:
+The importable Python API described below is available from 0.2.0 onward. To work
+from the development version instead:
 
 ```bash
 git clone https://github.com/yellepeddibk/failurelab.git
