@@ -22,11 +22,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
-from typing import Any
 
 from failurelab.llm.errors import SanitizedProviderError
 from failurelab.llm.protocol import InterpretationRequest, ProviderResponse
+from failurelab.llm.schema import RESPONSE_SCHEMA
 from failurelab.utilities.serialization import stable_dumps
+
+__all__ = ["DEFAULT_HOST", "MAX_RESPONSE_BYTES", "RESPONSE_SCHEMA", "OllamaProvider"]
 
 DEFAULT_HOST = "http://localhost:11434"
 MAX_RESPONSE_BYTES = 1_048_576
@@ -52,40 +54,6 @@ def _build_restricted_opener() -> urllib.request.OpenerDirector:
 
 
 _OPENER = _build_restricted_opener()
-
-_EVIDENCE_ITEM_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {"kind": {"type": "string"}, "id": {"type": "string"}},
-    "required": ["kind", "id"],
-}
-
-RESPONSE_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "summary": {
-            "type": "object",
-            "properties": {
-                "text": {"type": "string"},
-                "evidence": {"type": "array", "items": _EVIDENCE_ITEM_SCHEMA},
-            },
-            "required": ["text", "evidence"],
-        },
-        "observations": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "statement": {"type": "string"},
-                    "evidence": {"type": "array", "items": _EVIDENCE_ITEM_SCHEMA},
-                    "confidence": {"type": "string", "enum": ["low", "medium", "high"]},
-                },
-                "required": ["statement", "evidence"],
-            },
-        },
-        "caveats": {"type": "array", "items": {"type": "string"}},
-    },
-    "required": ["summary", "observations", "caveats"],
-}
 
 
 def _as_number(value: object, default: float) -> float:
