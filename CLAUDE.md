@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for Claude Code in this repository. Use this file as an index: read the pointed file before changing the area it covers, instead of rediscovering the repository each session. Detailed rules for implementing an approved task live in `.claude/skills/failurelab-execute/SKILL.md`; this file does not duplicate them.
+Guidance for Claude Code in this repository. Use this file as an index: read the pointed file before changing the area it covers, instead of rediscovering the repository each session. Detailed rules for implementing an approved task live in `.claude/skills/failurelab-execute/SKILL.md`; this file does not duplicate them. Cross-repo maintainer preferences are intentionally omitted. This file contains only FailureLab-specific requirements.
 
 ## Project
 
@@ -65,29 +65,29 @@ Coverage is collected (`--cov=failurelab --cov-branch`) but no fail-under thresh
 
 ## Workflow
 
-- Never commit directly to `main`. Create branches and commits only for explicitly requested work. Branch prefixes: `feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`.
-- Commit at each real engineering boundary, not once per branch. Keep a commit when it answers "what did this accomplish" (`Add trace serialization`, `Record provider latency`). Fold it when it answers "what mistake did I make while building this" (fix typo, fix lint, forgot import). Do not collapse legitimate commits to reduce the count, and do not manufacture commits to inflate it. Let the work decide how many there are rather than choosing a number in advance.
-- Every commit must be independently valid. Stage the complete logical unit: a clean working tree does not make a partially staged commit correct, because split imports poison `git bisect`. Untested but working code in a commit is acceptable; broken code is not.
-- Run `ruff check .`, `mypy src`, and `pytest` before each substantive commit. The suite takes roughly 12 seconds, so there is no reason to defer it. Run the full gate, including `ruff format --check`, `pre-commit run --all-files`, and `python -m build`, before preparing the pull request.
-- `main` is protected by the `protect-main` ruleset managed in the GitHub UI (1 approval, linear history, `quality-gate` and `CodeQL` required checks, branches must be up to date). See `docs/PROTECT_MAIN.md`. The tracked JSON is an export snapshot, not automation; re-export it after any UI change.
-- Rebase and Merge is the intended default, including for single-commit pull requests, so the branch history survives on `main`. Squash is the exception, used only when the branch history should not be preserved. The tracked ruleset export still records `allowed_merge_methods: ["squash"]`, so rebase merging has to be enabled in the GitHub UI before this takes effect.
-- End every prepared pull request with an explicit merge signal: `Ready to Rebase and Merge.` or `Recommend Squash and Merge this time: <reason>`. Never choose squash silently.
-- The maintainer performs all remote operations (push, PR creation, merge) manually. Do not fetch, pull, push, merge, open PRs, or alter authentication from Claude sessions. Provide exact commands for the maintainer instead.
-- Never commit while a required check is failing. Stage explicit paths only; never `git add -A`.
-- Do not commit generated outputs: report directories, `coverage.xml`, and `dist/` are gitignored. `examples/sample_output/` is the deliberately tracked sample.
-- Validate behavior, not just exit codes: when a change affects analysis or reports, run the CLI against `examples/*.jsonl` and inspect the generated artifacts.
+Cross-repo maintainer preferences are intentionally omitted here. This section covers only
+FailureLab-specific requirements. General branch and commit conventions are in
+`CONTRIBUTING.md`.
+
+- Run `ruff check .`, `mypy src`, and `pytest` before each substantive commit; the suite
+  takes roughly 12 seconds. The full gate before a pull request adds `ruff format --check .`,
+  `python -m build`, and `pre-commit run --all-files`.
+- Run `pre-commit run --all-files` whenever the environment can install and run the hooks.
+  When it cannot, run the equivalent checks directly (ruff, ruff format, codespell, and the
+  file hygiene checks), state plainly that `pre-commit` itself did not run, and treat a green
+  CI run as required before merge rather than optional.
+- `main` is protected: every change lands through a pull request, never a direct commit. The
+  `protect-main` ruleset is managed in the GitHub UI (1 approval, linear history,
+  `quality-gate` and `CodeQL` required checks, branches must be up to date).
+  See `docs/PROTECT_MAIN.md`. The tracked JSON is an export snapshot, not automation;
+  re-export it after any UI change.
+- The tracked ruleset export still records `allowed_merge_methods: ["squash"]`. Rebase
+  merging has to be enabled in the GitHub UI before the default Rebase and Merge applies here.
+- Do not commit generated outputs: report directories, `coverage.xml`, and `dist/` are
+  gitignored. `examples/sample_output/` is the deliberately tracked sample.
+- Validate behavior, not just exit codes: when a change affects analysis or reports, run the
+  CLI against `examples/*.jsonl` and inspect the generated artifacts.
 
 ## Skill usage
 
 Use `/failurelab-execute <task>` to implement one approved task end to end (fresh branch, smallest complete change, validation, local commits only). The skill owns the interpretation gate, acceptance criteria, validation sequence, commit rules, and report format; follow it rather than improvising an equivalent workflow inline.
-
-## Writing rules
-
-- No em dash characters in documentation, code comments, commit messages, or reports.
-- No AI attribution: no `Co-Authored-By`, `Generated-By`, AI signatures, or tool credits in commits, code, or PR text.
-- Be direct and technically honest. Do not exaggerate readiness, quality, or impact. State limitations plainly.
-
-## Environment notes
-
-- Checkouts inside cloud-synced directories (OneDrive, Dropbox, and similar) can hit file locking that breaks directory deletion and git housekeeping, especially on Windows. Avoid aggressive cleanup, garbage collection, and destructive git commands; `GIT_ASK_YESNO=false` avoids stuck retry prompts.
-- Do not assume a `gh` command on PATH is the official GitHub CLI; verify what it is before using it. Remote operations remain manual regardless.
