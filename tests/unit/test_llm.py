@@ -239,6 +239,22 @@ def test_provenance_records_all_request_bounds() -> None:
     assert params["timeout"] == 30.0
 
 
+def test_provider_latency_measured_with_monotonic_clock(monkeypatch) -> None:
+    """Latency is derived from a monotonic clock, not wall time."""
+    from importlib import import_module
+
+    # `failurelab.llm.interpret` resolves to the function on the package, so the
+    # module has to be fetched explicitly.
+    interpret_module = import_module("failurelab.llm.interpret")
+
+    ticks = iter([1_000_000_000, 1_125_000_000])
+    monkeypatch.setattr(interpret_module.time, "perf_counter_ns", lambda: next(ticks))
+
+    interp = fl.interpret(_report(), provider=FakeProvider())
+    assert interp.generation_metadata.provider_latency_ms == 125.0
+    assert interp.generation_metadata.to_dict()["provider_latency_ms"] == 125.0
+
+
 def test_report_projections_serializable() -> None:
     interp = fl.interpret(_report(), provider=FakeProvider())
     json.dumps(interp.to_dict())

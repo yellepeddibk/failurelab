@@ -54,6 +54,7 @@ class GenerationMetadata:
     include_trace_ids: bool
     timestamp: str
     failurelab_version: str
+    provider_latency_ms: float
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -68,6 +69,7 @@ class GenerationMetadata:
             "include_trace_ids": self.include_trace_ids,
             "timestamp": self.timestamp,
             "failurelab_version": self.failurelab_version,
+            "provider_latency_ms": self.provider_latency_ms,
         }
 
 
