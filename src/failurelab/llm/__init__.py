@@ -8,6 +8,7 @@ call ``interpret``.
 
 from __future__ import annotations
 
+from failurelab.llm.anthropic_provider import AnthropicProvider
 from failurelab.llm.errors import (
     InterpretationParseError,
     LLMError,
@@ -33,6 +34,7 @@ from failurelab.llm.protocol import (
 )
 
 __all__ = [
+    "AnthropicProvider",
     "Confidence",
     "EvidenceKind",
     "EvidenceReference",

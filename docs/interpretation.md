@@ -106,6 +106,50 @@ Behavior worth knowing:
   evidence to that machine or service. Raw content and trace IDs remain excluded
   unless you opt in through `failurelab.interpret`.
 
+### Anthropic (hosted, bring your own key)
+
+`AnthropicProvider` calls the Anthropic Messages API. It needs the optional
+extra, an API key you supply, and prepaid credits on your own Anthropic account:
+
+```bash
+python -m pip install "failurelab[anthropic]"
+```
+
+```python
+import failurelab as fl
+from failurelab.llm import AnthropicProvider
+
+provider = AnthropicProvider(model="claude-haiku-4-5", api_key="sk-ant-...")
+interpretation = fl.interpret(report, provider=provider, max_output_tokens=1024)
+```
+
+Behavior worth knowing:
+
+- **The model is required and has no default.** Naming it is a cost decision, so
+  FailureLab will not choose one for you.
+- The key is supplied explicitly, or read once from `ANTHROPIC_API_KEY` at
+  construction. FailureLab does not load `.env` files, and does not let the SDK
+  resolve ambient credentials such as auth tokens or CLI login profiles, so a
+  request cannot be billed to an account you did not name. Construction fails
+  before any network call when no key is available. The key never appears in
+  logs, provenance, exceptions, or `repr`.
+- One `interpret` call makes exactly one Messages API request, with **retries
+  disabled**. The SDK retries twice by default, which would issue additional
+  billable requests behind the single-call guarantee.
+- Structured output is constrained to the same JSON schema the Ollama adapter
+  uses. Thinking is disabled: it shares the output-token budget with the
+  response, and this is a bounded extraction task. Sampling parameters are never
+  sent, because current models reject them.
+- A refusal, a truncated response, and every API error become sanitized,
+  actionable messages naming only the model and HTTP status.
+- This transmits the structured evidence to Anthropic. Raw content and trace IDs
+  remain excluded unless you opt in.
+
+Cost is small but not zero. A bounded call of roughly 3,000 input tokens and up
+to 1,024 output tokens costs well under a cent on `claude-haiku-4-5`, and a few
+cents on the largest models. Set a spending limit on your Anthropic account
+before running it.
+
 ## Cost and privacy controls
 
 - `include_content=False` (default): no raw content leaves your machine.
