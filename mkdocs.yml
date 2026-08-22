@@ -48,5 +48,4 @@ markdown_extensions:
 
 exclude_docs: |
   RELEASING.md
-  PROTECT_MAIN.md
   design/

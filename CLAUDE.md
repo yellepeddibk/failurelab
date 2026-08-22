@@ -32,7 +32,6 @@ FailureLab is a local-first, deterministic AI reliability toolkit for RAG and ag
 | Config models and loading | `src/failurelab/config/settings.py` | |
 | Tests (unit, integration, golden, property, smoke) | `tests/` | |
 | Sample traces and outputs | `examples/` | |
-| Branch protection policy | `.github/rulesets/protect-main.json` | `docs/PROTECT_MAIN.md` |
 | Release process | | `docs/RELEASING.md` |
 
 ## Semantic contracts
@@ -76,13 +75,8 @@ FailureLab-specific requirements. General branch and commit conventions are in
   When it cannot, run the equivalent checks directly (ruff, ruff format, codespell, and the
   file hygiene checks), state plainly that `pre-commit` itself did not run, and treat a green
   CI run as required before merge rather than optional.
-- `main` is protected: every change lands through a pull request, never a direct commit. The
-  `protect-main` ruleset is managed in the GitHub UI (1 approval, linear history,
-  `quality-gate` and `CodeQL` required checks, branches must be up to date).
-  See `docs/PROTECT_MAIN.md`. The tracked JSON is an export snapshot, not automation;
-  re-export it after any UI change.
-- The tracked ruleset export still records `allowed_merge_methods: ["squash"]`. Rebase
-  merging has to be enabled in the GitHub UI before the default Rebase and Merge applies here.
+- `main` is protected: every change lands through a pull request with required checks green,
+  never a direct commit.
 - Do not commit generated outputs: report directories, `coverage.xml`, and `dist/` are
   gitignored. `examples/sample_output/` is the deliberately tracked sample.
 - Validate behavior, not just exit codes: when a change affects analysis or reports, run the
