@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import time
 from datetime import datetime, timezone
 from typing import cast
 
@@ -103,6 +104,7 @@ def interpret(
         system=_SYSTEM_PROMPT, evidence=packaged.evidence, parameters=parameters
     )
 
+    started_ns = time.perf_counter_ns()
     try:
         response = provider.generate(request)
     except SanitizedProviderError:
@@ -113,6 +115,7 @@ def interpret(
         raise ProviderError(
             f"provider {provider.name!r} failed to generate a response ({type(error).__name__})"
         ) from None
+    provider_latency_ms = (time.perf_counter_ns() - started_ns) / 1_000_000
 
     payload = _parse_response(response.text)
     summary, summary_evidence = _build_summary(payload, packaged.allowed_references)
@@ -138,6 +141,7 @@ def interpret(
         include_trace_ids=include_trace_ids,
         timestamp=datetime.now(timezone.utc).isoformat(),
         failurelab_version=__version__,
+        provider_latency_ms=provider_latency_ms,
     )
     return InterpretationReport(
         summary=summary,

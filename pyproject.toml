@@ -49,6 +49,12 @@ dev = [
   "bandit==1.9.4",
   "codespell==2.4.3",
 ]
+anthropic = [
+  # Capped at the major we verified against, matching how runtime deps are
+  # pinned. Structured outputs via output_config is required, so the floor is
+  # 1.0 rather than an untested older release.
+  "anthropic>=1.0,<2",
+]
 docs = [
   "mkdocs>=1.6",
   # Pinned exactly: a Material release can introduce new strict-mode warnings
@@ -101,6 +107,13 @@ mypy_path = "src"
 
 [[tool.mypy.overrides]]
 module = ["yaml"]
+ignore_missing_imports = true
+
+# The Anthropic SDK ships with the optional `anthropic` extra and is not
+# installed in the type-check environment, so its lazy import has no stubs here.
+# Scoped to this one module; strict typing is unchanged everywhere else.
+[[tool.mypy.overrides]]
+module = ["anthropic"]
 ignore_missing_imports = true
 
 [tool.codespell]
