@@ -1,6 +1,6 @@
 ---
 name: failurelab-execute
-description: Implement one approved FailureLab task on a fresh local branch, validate behavior and generated artifacts, and create exactly one local commit without contacting a remote repository. Invoke manually with /failurelab-execute followed by the task.
+description: Implement one approved FailureLab task on a fresh local branch, validate behavior and generated artifacts, and commit locally at each engineering boundary without contacting a remote repository. Invoke manually with /failurelab-execute followed by the task.
 disable-model-invocation: true
 argument-hint: "[approved task, correction, or goal]"
 ---
@@ -9,7 +9,7 @@ argument-hint: "[approved task, correction, or goal]"
 
 You are implementing one approved task in the `failurelab` repository. Work through the phases in order. Preserve FailureLab's determinism, semantic contracts, privacy defaults, and the maintainer's existing work.
 
-**Stop after creating one local commit. All remote Git operations, including the final push and PR creation, are performed manually by the maintainer.**
+**Stop after the last local commit. All remote Git operations, including the final push and PR creation, are performed manually by the maintainer.**
 
 Never fetch, pull, push, merge, rebase published history, open a pull request, contact a remote repository, or alter authentication.
 
@@ -208,7 +208,13 @@ Review every changed line. Confirm:
 - No em dash characters in modified text (scan mechanically before committing)
 - No AI attribution anywhere
 
-## Phase 9: Commit one local commit
+## Phase 9: Commit
+
+A branch is not one commit. Commit at each real engineering boundary reached during Phase 6, then run this phase again for the final boundary. Keep a commit when it answers "what did this accomplish"; fold it into the one it repairs when it answers "what mistake did I make while building this". Do not collapse legitimate commits to reduce the count, and do not manufacture commits to inflate it. Let the work decide how many there are.
+
+Every commit must be independently valid. Before each substantive commit, run `ruff check .`, `mypy src`, and `pytest`; the suite takes roughly 12 seconds. The full Phase 7 sequence is required before the branch is reported as ready, not before every intermediate commit.
+
+Stage the complete logical unit. A clean working tree does not make a partially staged commit correct, because imports split across commits poison `git bisect`. Untested but working code in a commit is acceptable; broken code is not.
 
 All required checks must be green. Stage explicit paths only; never `git add .` or `git add -A`.
 
@@ -229,14 +235,14 @@ Verify:
 git log -1 --format=full
 ```
 
-Confirm the commit contains only the intended files and no trailers or signatures.
+Confirm the commit contains only the intended files and no trailers or signatures. Never rewrite a commit that has already been pushed.
 
 ## Phase 10: Report and stop
 
 Scan the report itself for em dashes before producing it. Report:
 
 - Task interpretation: source, confirmed scope, implemented items, excluded ideas, open questions, assumptions
-- Git summary: branch, commit hash, commit message, `git show --stat --oneline HEAD`
+- Git summary: branch, every commit hash and message on it (`git log --oneline main..HEAD`), and `git show --stat --oneline HEAD`
 - Per-file changes: what changed, why, and which acceptance criterion it satisfies
 - Validation: every command run and its actual result, including behavior verification and artifact inspection
 - CI expectation: which jobs (`lint`, `type-check`, `tests`, `cross-platform-smoke`, `build`, `docs-and-metadata`, `security-check`, `quality-gate`, CodeQL) will validate the change after push
@@ -246,7 +252,10 @@ Scan the report itself for em dashes before producing it. Report:
 git push -u origin <branch>
 ```
 
-- Suggested PR title and Markdown body: summary, why, validation performed, limitations or follow-up. No attribution footer.
+- Suggested PR title, and a body that follows `.github/pull_request_template.md` exactly: a `## Summary` section, the `## Validation` checklist, and the `## Sensitive data check` box. Do not invent a different structure, and do not tick a checklist box for a command that was not actually run. No attribution footer.
+- The merge signal, as the last line: `Ready to Rebase and Merge.` or `Recommend Squash and Merge this time: <reason>`. Never choose squash silently.
+
+When the report also contains text for a GitHub issue, label each block explicitly (`PR description:` versus `New issue:`) so they are not pasted into the wrong field.
 
 Then stop and wait for the user. The maintainer pushes, opens the PR on the GitHub compare page, and merges.
 
