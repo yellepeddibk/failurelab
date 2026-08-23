@@ -44,6 +44,11 @@ twine check dist/*
 
 - Branch prefixes: `feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`
 - Conventional-style commits are encouraged (`feat:`, `fix:`, etc.).
+- Changes reach `main` only through a pull request. Direct commits are not accepted.
+- Required CI checks must pass before a pull request can merge.
+- History on `main` is linear.
+- Rebase and Merge is the default, so the branch history is preserved. Squash and Merge is
+  the exception, used when the branch history should not be kept.
 
 ## PR checklist
 

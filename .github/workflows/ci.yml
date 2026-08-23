@@ -112,7 +112,6 @@ jobs:
         with:
           python-version: '3.14'
       - run: python -m pip install -e ".[dev]"
-      - run: python -m json.tool .github/rulesets/protect-main.json > /dev/null
       - run: python -c "import yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.').rglob('*.yml')]"
 
   security-check:
