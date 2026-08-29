@@ -44,7 +44,7 @@ dev = [
   # dependency update to review, because a floating constraint already allows
   # the newest version. Pinning turns those upgrades into Dependabot pull
   # requests, so the version bump and any required fixes land together.
-  "ruff==0.16.3",
+  "ruff==0.16.4",
   "mypy==2.3.1",
   "bandit==1.9.4",
   "codespell==2.4.3",
