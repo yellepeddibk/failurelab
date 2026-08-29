@@ -1,0 +1,14 @@
+# Analysis configuration for the RAG example.
+#
+# retrieval_k MUST match the k the pipeline retrieves with. FailureLab computes
+# retrieval_recall_at_k by truncating retrieved_sources to the configured k, so a
+# config of 3 against a pipeline retrieving 5 silently measures recall@3 and hides
+# any difference between retrievers that appears at ranks 4 and 5.
+schema_version: "0.1"
+evaluation:
+  retrieval_k: 5
+slices:
+  minimum_support: 2
+  maximum_findings: 10
+reporting:
+  include_content: false
