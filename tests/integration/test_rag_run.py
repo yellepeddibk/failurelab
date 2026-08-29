@@ -55,3 +55,18 @@ def test_default_run_writes_nothing_into_the_repository(
 ) -> None:
     assert runner.main(["--dataset", "rag_abstention.jsonl"]) == 0
     assert "temporary directory" in capsys.readouterr().out
+
+
+def test_timeout_flag_reaches_the_live_generator() -> None:
+    """An unplumbed flag is worse than no flag."""
+    spec = next(spec for spec in DATASETS if spec.answerable)
+    generator, clock = runner._build_generator(spec, "ollama", "gemma3", 42.5)
+    assert generator.timeout == 42.5
+    assert type(clock).__name__ == "RealClock"
+
+
+def test_scripted_path_uses_a_fixed_clock() -> None:
+    """Reproducible fixtures cannot carry measured latency or wall-clock stamps."""
+    spec = next(spec for spec in DATASETS if spec.answerable)
+    _, clock = runner._build_generator(spec, "scripted", None, 1.0)
+    assert type(clock).__name__ == "FixedClock"

@@ -29,7 +29,11 @@ from rag_pipeline.chunking import Chunk
 from rag_pipeline.generation import GeneratedAnswer
 
 DEFAULT_HOST = "http://localhost:11434"
-DEFAULT_TIMEOUT = 60.0
+# Local models are slow. A gemma3 answer over five retrieved chunks measured 33 to
+# 47 seconds on ordinary hardware, and a 60 second budget produced real timeouts
+# partway through a full run. The default is generous so the example works out of
+# the box; the runner exposes --timeout for anything slower.
+DEFAULT_TIMEOUT = 180.0
 MAX_RESPONSE_BYTES = 1_048_576
 
 RESPONSE_SCHEMA: dict[str, Any] = {

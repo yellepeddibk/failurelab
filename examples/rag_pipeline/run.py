@@ -37,11 +37,13 @@ from rag_pipeline.datasets import (
 )
 from rag_pipeline.datasets import load_all_questions as _load_questions
 from rag_pipeline.generation import Generator
-from rag_pipeline.ollama_generator import OllamaGenerator
+from rag_pipeline.ollama_generator import DEFAULT_TIMEOUT, OllamaGenerator
 from rag_pipeline.pipeline import Clock, FixedClock, RealClock, write_traces
 
 
-def _build_generator(spec: DatasetSpec, name: str, model: str | None) -> tuple[Generator, Clock]:
+def _build_generator(
+    spec: DatasetSpec, name: str, model: str | None, timeout: float
+) -> tuple[Generator, Clock]:
     """Choose the generator and the matching clock.
 
     The scripted path pairs with a fixed clock so runs stay byte-reproducible. A
@@ -53,7 +55,7 @@ def _build_generator(spec: DatasetSpec, name: str, model: str | None) -> tuple[G
         return scripted_generator(questions), FixedClock()
     if not model:
         raise SystemExit("--model is required when --generator ollama is used")
-    return OllamaGenerator(model=model), RealClock()
+    return OllamaGenerator(model=model, timeout=timeout), RealClock()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -72,6 +74,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="record raw retrieved context in the traces (off by default)",
     )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=DEFAULT_TIMEOUT,
+        help="per-question timeout in seconds for the live generator",
+    )
     parser.add_argument("--list", action="store_true", help="list the datasets and exit")
     args = parser.parse_args(argv)
 
@@ -86,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
         destination = args.output or Path(scratch)
         destination.mkdir(parents=True, exist_ok=True)
         for spec in selected:
-            generator, clock = _build_generator(spec, args.generator, args.model)
+            generator, clock = _build_generator(spec, args.generator, args.model, args.timeout)
             traces = generate(
                 spec,
                 generator=generator,
