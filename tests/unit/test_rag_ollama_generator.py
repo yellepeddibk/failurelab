@@ -80,7 +80,7 @@ def test_request_shape_is_deterministic(monkeypatch) -> None:
     assert body["model"] == "gemma3"
     assert body["stream"] is False
     assert body["format"] == RESPONSE_SCHEMA
-    assert body["options"] == {"temperature": 0, "seed": 0}
+    assert body["options"] == {"temperature": 0, "seed": 0, "num_predict": 1024}
     assert "a#0" in body["messages"][1]["content"]
 
 
@@ -179,3 +179,16 @@ def test_construction_makes_no_request(monkeypatch) -> None:
     captured = _install(monkeypatch, payload=_valid())
     OllamaGenerator(model="gemma3")
     assert captured["calls"] == 0
+
+
+def test_generation_is_bounded(monkeypatch) -> None:
+    """Unbounded generation lets one request run until the HTTP timeout."""
+    captured = _install(monkeypatch, payload=_valid())
+    OllamaGenerator(model="gemma3", max_output_tokens=256).generate("question?", CONTEXTS)
+    assert captured["body"]["options"]["num_predict"] == 256
+
+
+@pytest.mark.parametrize("tokens", [0, -1])
+def test_non_positive_output_bound_rejected(tokens: int) -> None:
+    with pytest.raises(ValueError):
+        OllamaGenerator(model="gemma3", max_output_tokens=tokens)
