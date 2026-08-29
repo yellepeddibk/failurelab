@@ -23,6 +23,7 @@ nav:
       - Privacy: privacy.md
       - Architecture: architecture.md
       - Investigation agent: agent-architecture.md
+  - RAG example: rag-example.md
   - CLI: cli.md
   - Python API: api.md
   - Interpretation: interpretation.md
