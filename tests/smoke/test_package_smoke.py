@@ -15,7 +15,7 @@ from failurelab import (
 
 
 def test_version_present() -> None:
-    assert __version__ == "0.3.0.dev0"
+    assert __version__ == "0.3.0"
 
 
 def test_public_api_surface() -> None:
