@@ -106,6 +106,21 @@ comparison.write("reports", overwrite=True)
 
 Runnable versions of these snippets live in [examples/analyze_in_memory.py](examples/analyze_in_memory.py) and [examples/analyze_from_jsonl.py](examples/analyze_from_jsonl.py).
 
+## End-to-end RAG example
+
+[examples/rag_pipeline/](examples/rag_pipeline/) is a complete RAG application that
+emits FailureLab traces: Markdown documents, deterministic chunking, BM25 retrieval
+with two variants, an answer generator, and a citation-grounded evaluation. It adds
+no dependencies, and it runs without a model.
+
+```bash
+python examples/rag_pipeline/run.py --output ./rag-out
+failurelab compare examples/rag_pipeline/data/rag_v1.jsonl   examples/rag_pipeline/data/rag_v2.jsonl   --config examples/rag_pipeline/config.yaml --output ./reports
+```
+
+See [docs/rag-example.md](docs/rag-example.md), including the measured retriever
+comparison and what the evaluation does and does not prove.
+
 ## Command-line interface
 
 The CLI wraps the same deterministic engine and writes the same report files.
