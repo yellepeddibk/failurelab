@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for Claude Code in this repository. Use this file as an index: read the pointed file before changing the area it covers, instead of rediscovering the repository each session. Detailed rules for implementing an approved task live in `.claude/skills/failurelab-execute/SKILL.md`; this file does not duplicate them. Cross-repo maintainer preferences are intentionally omitted. This file contains only FailureLab-specific requirements.
+Guidance for Claude Code in this repository. Use this file as an index: read the pointed file before changing the area it covers, instead of rediscovering the repository each session. The procedure for verifying a change against real generated artifacts lives in `.claude/skills/failurelab-verify/SKILL.md`; this file does not duplicate it. Cross-repo maintainer preferences and the generic implementation lifecycle are intentionally omitted. This file contains only FailureLab-specific requirements.
 
 ## Project
 
@@ -46,6 +46,7 @@ These behaviors were deliberately designed and must not regress:
 - Unavailable metrics: counts may be 0, but observation-dependent statistics are `null` with a semantically correct denominator, `eligible_count: 0`, the real excluded count, and an `unavailable_reason`. Never fake a denominator of 1.
 - Comparison gates are tri-state: `not_configured`, `passed`, `failed`. With no thresholds, `gate_passed` is `null` in JSON and Markdown says not evaluated / not applicable. Markdown must never print Python values such as `None`, and should avoid binary float artifacts.
 - Privacy: `include_content` defaults to false. Raw prompts, answers, retrieved context, and tool arguments stay out of reports by default. Manifests use safe filenames, not absolute paths.
+- Determinism of the core: the same input produces the same analysis output, with stable ordering and stable identifiers, and no dependence on wall-clock time or randomness. This guarantee covers the deterministic core only. The opt-in interpretation layer calls a live provider whose output is not reproducible; it is recorded with provenance rather than treated as stable.
 
 ## Commands
 
@@ -84,4 +85,4 @@ FailureLab-specific requirements. General branch and commit conventions are in
 
 ## Skill usage
 
-Use `/failurelab-execute <task>` to implement one approved task end to end (fresh branch, smallest complete change, validation, local commits only). The skill owns the interpretation gate, acceptance criteria, validation sequence, commit rules, and report format; follow it rather than improvising an equivalent workflow inline.
+Use `/failurelab-verify` after changing analysis, reports, or the CLI, to confirm the change against real generated artifacts rather than tests alone. The skill covers choosing a representative fixture for the affected surface, running the real workflow, and reading the output; it does not repeat the contracts above.
