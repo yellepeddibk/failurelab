@@ -173,6 +173,40 @@ Be precise about what is real in them:
 Live runs against Ollama produce real generation behavior, and are not committed
 because they are not reproducible.
 
+## Live verification, and one unresolved hang
+
+The deterministic path is fully reproducible. The live path was verified against a
+local `gemma3` and is reported here exactly as measured.
+
+**Abstention partition, 8 of 8 completed.** The model abstained correctly on seven
+questions and produced one genuine, unseeded failure:
+
+> `q034`, "Which cloud provider hosts the payments service?" was answered with "The
+> payments service runs in the primary region", citing `runbook-payments#0`, instead
+> of abstaining.
+
+The corpus never names a cloud provider. The model latched onto adjacent context
+about regions and produced a plausible non-answer. The pipeline classified it as
+`fabricated_answer`. That is the failure the abstention partition exists to catch,
+and it was found by a real model rather than authored.
+
+**Answerable partition, 30 of 31 completed.** Per-question latency varied widely on
+the same hardware, from 8.2 to 49.4 seconds, and the same question measured 13.0
+seconds on one run and 43.8 seconds on another. Treat any timing here as indicative
+only.
+
+**`q006` hangs reproducibly.** "What is an escalation owner?" times out every time,
+three attempts out of three. Its retrieved context is five chunks that all *mention*
+the term while none *defines* it, because retrieval misses the glossary chunk. The
+other retrieval miss, `q021`, completes normally in 16.5 seconds, so a retrieval miss
+alone does not explain it.
+
+Bounding generated output did **not** resolve it. The cause is not established, and
+it is not claimed to be a defect in this example: the request is well formed, the
+budget is bounded, and the generator times out with an actionable message rather than
+hanging forever. If you hit it, `--timeout` and `--max-output-tokens` are available,
+and the deterministic path remains the reproducible reference.
+
 ## Limitations
 
 - Lexical retrieval only. No embeddings, no semantic search.
