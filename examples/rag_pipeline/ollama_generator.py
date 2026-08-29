@@ -29,11 +29,13 @@ from rag_pipeline.chunking import Chunk
 from rag_pipeline.generation import GeneratedAnswer
 
 DEFAULT_HOST = "http://localhost:11434"
-# Local models are slow. A gemma3 answer over five retrieved chunks measured 33 to
-# 47 seconds on ordinary hardware, and a 60 second budget produced real timeouts
-# partway through a full run. The default is generous so the example works out of
-# the box; the runner exposes --timeout for anything slower.
 DEFAULT_TIMEOUT = 180.0
+# Generation is bounded, matching the library's own Ollama provider, so a single
+# request cannot produce unlimited output. Measured note: bounding output did NOT
+# resolve the one reproducible hang observed on the frozen question set (q006
+# times out consistently while the other 30 questions complete), so the bound is
+# a defensive default rather than a fix for that behavior.
+DEFAULT_MAX_OUTPUT_TOKENS = 1024
 MAX_RESPONSE_BYTES = 1_048_576
 
 RESPONSE_SCHEMA: dict[str, Any] = {
@@ -109,10 +111,13 @@ class OllamaGenerator:
     host: str = DEFAULT_HOST
     name: str = "ollama"
     timeout: float = DEFAULT_TIMEOUT
+    max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS
 
     def __post_init__(self) -> None:
         if not isinstance(self.model, str) or not self.model.strip():
             raise ValueError("model must be a non-empty string")
+        if self.max_output_tokens <= 0:
+            raise ValueError("max_output_tokens must be positive")
         self.model = self.model.strip()
         self.host = _normalize_host(self.host)
 
@@ -128,7 +133,7 @@ class OllamaGenerator:
             ],
             "stream": False,
             "format": RESPONSE_SCHEMA,
-            "options": {"temperature": 0, "seed": 0},
+            "options": {"temperature": 0, "seed": 0, "num_predict": self.max_output_tokens},
         }
         request = urllib.request.Request(
             f"{self.host}/api/chat",
