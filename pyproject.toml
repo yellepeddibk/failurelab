@@ -44,8 +44,8 @@ dev = [
   # dependency update to review, because a floating constraint already allows
   # the newest version. Pinning turns those upgrades into Dependabot pull
   # requests, so the version bump and any required fixes land together.
-  "ruff==0.16.4",
-  "mypy==2.3.1",
+  "ruff==0.17.3",
+  "mypy==2.4.0",
   "bandit==1.9.4",
   "codespell==2.4.3",
 ]
@@ -59,7 +59,7 @@ docs = [
   "mkdocs>=1.6",
   # Pinned exactly: a Material release can introduce new strict-mode warnings
   # that fail `mkdocs build --strict`.
-  "mkdocs-material==9.7.7",
+  "mkdocs-material==9.8.0",
   "mkdocstrings[python]>=0.26",
 ]
 
